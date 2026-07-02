@@ -1,0 +1,1372 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Comparador de Ativos · Pleno Gestão</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@400,0&display=swap" rel="stylesheet">
+<script>
+/* SheetJS — fallback chain */
+(function(){
+  var cdns=[
+    'https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js',
+    'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
+    'https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js'
+  ], i=0;
+  function next(){ if(i>=cdns.length){window._xlsxFailed=true;return;}
+    var s=document.createElement('script'); s.src=cdns[i++]; s.onerror=next; document.head.appendChild(s); }
+  next();
+})();
+</script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+
+/* ==================== TOPBAR PADRÃO HUB ==================== */
+.hub-topbar {
+    --bg-topbar: #141720;
+    --border-topbar: #2a2e3f;
+    --text-topbar: #e1e3ef;
+    --text2-topbar: #9a9eb8;
+    --text3-topbar: #5c6080;
+    --gold-topbar: #f5c842;
+    --amber-topbar: #e0ac2c;
+    font-family: 'DM Sans', 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg-topbar);
+    border-bottom: 1px solid var(--border-topbar);
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1rem;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 200;
+}
+body.light .hub-topbar {
+    --bg-topbar: #ffffff;
+    --border-topbar: #d4d8e2;
+    --text-topbar: #1a1d2e;
+    --text2-topbar: #4a4f6a;
+    --text3-topbar: #8a90a8;
+    --gold-topbar: #b8860b;
+    --amber-topbar: #c47d00;
+}
+.hub-topbar-left, .hub-topbar-right { display:flex; align-items:center; gap:8px; flex-shrink:0; }
+.hub-topbar-center { position:absolute; left:50%; transform:translateX(-50%); white-space:nowrap; pointer-events:none; }
+.hub-pbf-badge { background:var(--gold-topbar); padding:0 12px; height:30px; border-radius:40px; display:flex; align-items:center; font-size:12px; font-weight:800; color:#000; letter-spacing:.5px; }
+.hub-topbar-title { font-size:14px; font-weight:600; color:var(--text-topbar); white-space:nowrap; }
+.hub-back-btn, .hub-newtab-btn { display:inline-flex; align-items:center; gap:5px; background:transparent; border:1px solid var(--border-topbar); border-radius:8px; color:var(--text2-topbar); font-family:inherit; font-size:12px; font-weight:500; padding:5px 10px; cursor:pointer; transition:.2s; white-space:nowrap; }
+.hub-back-btn:hover, .hub-newtab-btn:hover { border-color:var(--amber-topbar); color:var(--gold-topbar); background:var(--bg-topbar); }
+.hub-back-btn .material-symbols-outlined, .hub-newtab-btn .material-symbols-outlined { font-size:16px; }
+.hub-active-tool { font-size:15px; font-weight:700; color:var(--gold-topbar); white-space:nowrap; background:transparent; }
+.hub-clock { font-size:11px; color:var(--text3-topbar); font-variant-numeric:tabular-nums; background:var(--bg-topbar); padding:4px 10px; border-radius:30px; border:1px solid var(--border-topbar); }
+.hub-theme-btn { background:var(--bg-topbar); border:1px solid var(--border-topbar); border-radius:30px; width:34px; height:34px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:16px; transition:border-color .2s; flex-shrink:0; }
+.hub-theme-btn:hover { border-color:var(--gold-topbar); }
+.material-symbols-outlined { font-family:'Material Symbols Outlined'; font-weight:normal; font-style:normal; font-size:20px; line-height:1; letter-spacing:normal; text-transform:none; display:inline-block; white-space:nowrap; word-wrap:normal; direction:ltr; font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24; }
+@media (max-width:600px) {
+    .hub-back-btn span:not(.material-symbols-outlined), .hub-newtab-btn span:not(.material-symbols-outlined) { display:none; }
+    .hub-back-btn, .hub-newtab-btn { padding:5px 8px; }
+    .hub-active-tool { font-size:13px; max-width:140px; overflow:hidden; text-overflow:ellipsis; }
+    .hub-clock { font-size:10px; padding:4px 6px; }
+}
+@media (max-width:480px) {
+    .hub-topbar-title { display:none; }
+    .hub-topbar-center { position:static; transform:none; margin:0 auto; }
+}
+/* ==================== FIM TOPBAR ==================== */
+
+:root{--bg:#0B0E1A;--bg-card:#0F1322;--bg-card2:#151929;--bg-card3:#1C2235;--bd:#252B40;--bd2:#2E3555;--tx:#E5E9F0;--tx2:#8E9AAF;--tx3:#55627A;--gold:#C5A059;--gold2:#DDB96A;}
+body.light{--bg:#F0F2F8;--bg-card:#FFFFFF;--bg-card2:#F5F7FC;--bg-card3:#EAECF5;--bd:#D4D8E8;--bd2:#C0C6D8;--tx:#1A1E2B;--tx2:#4A5068;--tx3:#8890A8;--gold:#9A7530;--gold2:#B8920A;}
+body{background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--tx);min-height:100vh;transition:background .2s,color .2s;}
+
+.page{max-width:1380px;margin:0 auto;padding:1.75rem 1.5rem;}
+.sec{font-size:.62rem;font-weight:600;text-transform:uppercase;letter-spacing:.14em;color:var(--gold);display:flex;align-items:center;gap:10px;margin-bottom:1.1rem;}
+.sec::after{content:'';flex:1;height:1px;background:var(--bd);}
+
+/* ── UPLOAD CARDS ── */
+.upload-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:1.5rem;}
+@media(max-width:900px){.upload-grid{grid-template-columns:1fr 1fr;}}
+@media(max-width:600px){.upload-grid{grid-template-columns:1fr;}}
+/* ── UPLOAD: barra estilo "base-status-bar" (igual ao Conglomerado/FGC) ── */
+.upload-card{background:var(--bg-card);border:1px solid var(--bd);border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;transition:border-color .2s,background .2s;position:relative;}
+.upload-card.loaded{border-color:rgba(39,174,96,.35);}
+.uc-label{font-size:.72rem;color:var(--tx3);white-space:nowrap;}
+.uc-sub{display:none;}
+.uc-header{display:none;}
+.uc-icon{display:none;}
+.uc-title{display:none;}
+.drop-zone{display:flex;align-items:center;gap:5px;margin-left:auto;background:rgba(197,160,89,.08);border:1px solid rgba(197,160,89,.4);color:var(--gold);font-family:'DM Sans',sans-serif;font-size:.72rem;font-weight:600;padding:5px 12px;border-radius:8px;cursor:pointer;transition:all .15s;position:relative;}
+.drop-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.drop-zone:hover,.drop-zone.dragover{background:rgba(197,160,89,.16);border-color:var(--gold);}
+.drop-zone.loaded{border-color:rgba(39,174,96,.4);background:rgba(39,174,96,.08);color:#2ECC71;}
+.dz-icon{font-size:.85rem;line-height:1;}
+.dz-label{display:flex;align-items:center;}
+.dz-label strong{font-weight:600;}
+.dz-label > *:not(strong){display:none;}
+
+.st{display:inline-flex;align-items:center;gap:5px;padding:4px 11px;border-radius:20px;font-size:.69rem;font-weight:600;}
+.st.idle{background:var(--bg-card3);color:var(--tx3);border:1px solid var(--bd);}
+.st.ok{background:rgba(39,174,96,.12);color:#2ECC71;border:1px solid rgba(39,174,96,.25);}
+.st.err{background:rgba(192,57,43,.12);color:#E74C3C;border:1px solid rgba(192,57,43,.25);}
+.st.warn{background:rgba(230,126,34,.12);color:#E67E22;border:1px solid rgba(230,126,34,.25);}
+.btn-clr{background:transparent;border:1px solid var(--bd);color:var(--tx3);padding:4px 11px;border-radius:20px;font-size:.69rem;cursor:pointer;font-family:inherit;transition:all .15s;}
+.btn-clr:hover{border-color:#E74C3C;color:#E74C3C;background:rgba(192,57,43,.1);}
+
+/* ── SEARCH / SELECT CLIENT ── */
+.search-bar{background:var(--bg-card);border:1px solid var(--bd);border-radius:16px;padding:1.1rem 1.4rem;margin-bottom:1.75rem;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.search-label{font-size:.72rem;color:var(--tx3);text-transform:uppercase;letter-spacing:.1em;white-space:nowrap;}
+.search-input{flex:1;min-width:160px;background:var(--bg-card3);border:1px solid var(--bd);border-radius:10px;padding:10px 16px;color:var(--tx);font-family:'DM Mono',monospace;font-size:.9rem;outline:none;transition:border-color .2s;}
+.search-input:focus{border-color:var(--gold);}
+.btn-compare{background:var(--gold);color:#000;border:none;border-radius:10px;padding:10px 22px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:.82rem;cursor:pointer;transition:background .15s;white-space:nowrap;}
+.btn-compare:hover{background:var(--gold2);}
+.btn-compare:disabled{opacity:.35;cursor:not-allowed;}
+
+/* ── CLIENT LIST ── */
+.clients-wrap{margin-bottom:1.75rem;}
+.clients-toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:.85rem;}
+.search-box{background:var(--bg-card);border:1px solid var(--bd);border-radius:8px;padding:7px 14px;display:flex;align-items:center;gap:8px;flex:1;max-width:280px;transition:border-color .15s;}
+.search-box:focus-within{border-color:rgba(197,160,89,.45);}
+.search-box svg{flex-shrink:0;opacity:.4;}
+.search-box input{background:transparent;border:none;color:var(--tx);font-size:.8rem;outline:none;width:100%;font-family:inherit;}
+.search-box input::placeholder{color:var(--tx3);}
+.sort-buttons{display:flex;gap:6px;}
+.sort-btn{background:transparent;border:1px solid var(--bd);border-radius:6px;padding:6px 12px;font-size:.7rem;font-weight:500;color:var(--tx3);cursor:pointer;transition:all .15s;font-family:inherit;}
+.sort-btn:hover{color:var(--tx2);border-color:var(--bd2);}
+.sort-btn.active{background:rgba(197,160,89,.1);border-color:rgba(197,160,89,.4);color:var(--gold);}
+.clients-stats{font-size:.65rem;color:var(--tx3);white-space:nowrap;margin-left:auto;}
+/* ── ALERT FILTER BUTTONS ── */
+.alert-filter-btns{display:flex;gap:6px;flex-wrap:wrap;}
+.alert-filter-btn{background:transparent;border:1px solid var(--bd);border-radius:6px;padding:5px 10px;font-size:.68rem;font-weight:600;color:var(--tx3);cursor:pointer;transition:all .15s;font-family:inherit;display:flex;align-items:center;gap:5px;white-space:nowrap;}
+.alert-filter-btn:hover{border-color:var(--bd2);color:var(--tx2);}
+.alert-filter-btn.active-aprov{background:rgba(39,174,96,.12);border-color:rgba(39,174,96,.4);color:#2ECC71;}
+.alert-filter-btn.active-reprov{background:rgba(192,57,43,.12);border-color:rgba(192,57,43,.4);color:#E74C3C;}
+.alert-filter-btn.active-semcob{background:rgba(212,130,10,.12);border-color:rgba(212,130,10,.4);color:#E67E22;}
+.alert-filter-btn.active-conc{background:rgba(41,128,185,.12);border-color:rgba(41,128,185,.4);color:#5DADE2;}
+/* ── ALERT BADGES inline no client-row ── */
+.cr-alert-badges{display:inline-flex;gap:4px;flex-wrap:wrap;margin-left:6px;align-items:center;}
+.cr-alert{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:8px;font-size:.66rem;font-weight:700;line-height:1.5;white-space:nowrap;font-family:'DM Sans',sans-serif;}
+.cr-alert-dot{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0;}
+.cr-alert.aprov{background:rgba(39,174,96,.15);color:#2ECC71;border:1px solid rgba(39,174,96,.3);}
+.cr-alert.reprov{background:rgba(192,57,43,.12);color:#E74C3C;border:1px solid rgba(192,57,43,.25);}
+.cr-alert.semcob{background:rgba(212,130,10,.12);color:#E67E22;border:1px solid rgba(212,130,10,.25);}
+.cr-alert.conc{background:rgba(41,128,185,.12);color:#5DADE2;border:1px solid rgba(41,128,185,.25);}
+.clients-table-wrap{background:var(--bg-card);border:1px solid var(--bd);border-radius:12px;overflow:hidden;}
+.clients-table-head{display:grid;grid-template-columns:1fr 90px 90px 40px;padding:8px 14px;border-bottom:1px solid var(--bd);font-size:.6rem;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--tx3);}
+.clients-table-body{max-height:280px;overflow-y:auto;}
+.clients-table-body::-webkit-scrollbar{width:4px;}
+.clients-table-body::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px;}
+.clients-table-body::-webkit-scrollbar-thumb:hover{background:var(--gold);}
+.client-row{display:grid;grid-template-columns:1fr 90px 90px 40px;align-items:center;padding:9px 14px;border-bottom:1px solid var(--bd);cursor:pointer;transition:background .12s;}
+.client-row:last-child{border-bottom:none;}
+.client-row:hover{background:var(--bg-card2);}
+.client-row.active{background:rgba(197,160,89,.07);}
+.client-row.active .cr-id{color:var(--gold2);}
+.cr-id{font-family:'DM Mono',monospace;font-size:.8rem;font-weight:500;color:var(--gold);display:flex;align-items:center;gap:8px;}
+.cr-id-dot{width:6px;height:6px;border-radius:50%;background:var(--bd);flex-shrink:0;transition:background .12s;}
+.client-row.active .cr-id-dot{background:var(--gold);}
+.cr-pos{font-size:.75rem;font-family:'DM Mono',monospace;color:var(--tx2);text-align:center;}
+.cr-label{font-size:.62rem;color:var(--tx3);text-align:center;}
+.cr-arrow{display:flex;justify-content:flex-end;opacity:0;transition:opacity .12s;}
+.client-row:hover .cr-arrow,.client-row.active .cr-arrow{opacity:1;}
+.cr-arrow svg{stroke:var(--gold);}
+.clients-table-footer{padding:8px 14px;border-top:1px solid var(--bd);font-size:.65rem;color:var(--tx3);text-align:right;background:var(--bg);}
+
+/* ── ASSET TYPE DROPDOWN ── */
+.asset-type-filter{position:relative;display:inline-block;}
+.asset-type-dropdown{display:none;position:absolute;top:100%;left:0;margin-top:4px;background:var(--bg-card);border:1px solid var(--bd);border-radius:8px;padding:8px 12px;z-index:20;min-width:170px;box-shadow:0 8px 24px rgba(0,0,0,.3);}
+.asset-type-dropdown.open{display:block;}
+.asset-type-dropdown label{display:flex;align-items:center;gap:6px;font-size:.75rem;color:var(--tx2);padding:4px 0;cursor:pointer;}
+.asset-type-dropdown label:hover{color:var(--tx);}
+.asset-type-dropdown input[type="checkbox"]{accent-color:var(--gold);width:14px;height:14px;cursor:pointer;}
+
+/* ── ISSUER FILTER ── */
+.issuer-filter-wrap{background:var(--bg-card);border:1px solid var(--bd);border-radius:12px;margin-bottom:1.75rem;overflow:hidden;}
+.issuer-filter-header{display:flex;align-items:center;gap:10px;padding:.85rem 1.2rem;border-bottom:1px solid var(--bd);flex-wrap:wrap;}
+.issuer-filter-label{font-size:.62rem;font-weight:600;text-transform:uppercase;letter-spacing:.14em;color:var(--gold);}
+.issuer-search-box{background:var(--bg-card2);border:1px solid var(--bd);border-radius:8px;padding:7px 14px;display:flex;align-items:center;gap:8px;flex:1;max-width:420px;transition:border-color .15s;}
+.issuer-search-box:focus-within{border-color:rgba(197,160,89,.45);}
+.issuer-search-box input{background:transparent;border:none;color:var(--tx);font-size:.82rem;outline:none;width:100%;font-family:inherit;}
+.issuer-search-box input::placeholder{color:var(--tx3);}
+.issuer-clear-btn{background:transparent;border:none;color:var(--tx3);cursor:pointer;font-size:.72rem;padding:3px 8px;border-radius:6px;transition:all .15s;font-family:inherit;white-space:nowrap;}
+.issuer-clear-btn:hover{color:#E74C3C;background:rgba(192,57,43,.1);}
+.issuer-results{display:none;padding:.8rem 1.2rem;}
+.issuer-results.visible{display:block;}
+.issuer-results-title{font-size:.65rem;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:var(--tx3);margin-bottom:.6rem;}
+.issuer-results-title span{color:var(--gold);font-size:.75rem;font-weight:700;}
+.issuer-clients-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;}
+.issuer-client-card{background:var(--bg-card2);border:1px solid var(--bd);border-radius:10px;padding:.65rem 1rem;cursor:pointer;transition:all .15s;}
+.issuer-client-card:hover{border-color:rgba(197,160,89,.4);background:var(--bg-card3);}
+.issuer-client-id{font-family:'DM Mono',monospace;font-size:.8rem;font-weight:600;color:var(--gold);}
+.issuer-client-assets{font-size:.65rem;color:var(--tx3);margin-top:4px;}
+.issuer-no-results{font-size:.8rem;color:var(--tx3);padding:.5rem 0;font-style:italic;}
+
+/* ── RESULT PANEL (accordion) ── */
+.result-panel{background:var(--bg-card);border:1px solid var(--bd);border-radius:16px;overflow:hidden;}
+.rp-header{padding:1rem 1.4rem;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+.rp-title{font-size:.95rem;font-weight:600;}
+.rp-client{font-size:.72rem;color:var(--tx3);font-family:'DM Mono',monospace;}
+.summary{display:flex;gap:7px;flex-wrap:wrap;padding:1rem 1.4rem;border-bottom:1px solid var(--bd);}
+.sp{display:flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;font-size:.69rem;font-weight:600;}
+.sp.total{background:rgba(197,160,89,.12);color:var(--gold);border:1px solid rgba(197,160,89,.2);}
+.sp.aprov{background:rgba(39,174,96,.12);color:#2ECC71;border:1px solid rgba(39,174,96,.25);}
+.sp.reprov{background:rgba(192,57,43,.12);color:#E74C3C;border:1px solid rgba(192,57,43,.25);}
+.sp.semcob{background:rgba(212,130,10,.12);color:#E67E22;border:1px solid rgba(212,130,10,.25);}
+.sp-d{width:5px;height:5px;border-radius:50%;background:currentColor;}
+.asset-list{padding:.6rem .8rem;}
+.asset-row{border:1px solid var(--bd);border-radius:12px;margin-bottom:8px;overflow:hidden;}
+.asset-row.open{border-color:rgba(197,160,89,.3);}
+.asset-head{display:grid;grid-template-columns:2fr 1.1fr 1fr 1fr .9fr .9fr auto;align-items:center;gap:10px;padding:.75rem 1rem;cursor:pointer;background:var(--bg-card2);}
+@media(max-width:900px){.asset-head{grid-template-columns:1fr 1fr auto;}.asset-head .hide-sm{display:none;}}
+.asset-head:hover{background:var(--bg-card3);}
+.asset-row.open .asset-head{background:var(--bg-card3);}
+.ah-emissor .em{font-weight:600;font-size:.82rem;color:var(--tx);}
+.ah-emissor .em-interno{font-size:.68rem;color:var(--tx3);margin-top:2px;font-family:'DM Mono',monospace;}
+.ah-val{font-size:.8rem;font-family:'DM Mono',monospace;font-weight:500;color:var(--tx2);}
+.ah-date,.ah-rate{font-size:.72rem;font-family:'DM Mono',monospace;color:var(--tx3);}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:16px;font-size:.67rem;font-weight:700;white-space:nowrap;}
+.badge .bd{width:4px;height:4px;border-radius:50%;background:currentColor;}
+.badge.aprovado{background:rgba(39,174,96,.12);color:#2ECC71;border:1px solid rgba(39,174,96,.25);}
+.badge.reprovado{background:rgba(192,57,43,.12);color:#E74C3C;border:1px solid rgba(192,57,43,.25);}
+.badge.semcobertura{background:rgba(212,130,10,.12);color:#E67E22;border:1px solid rgba(212,130,10,.25);}
+.badge-rating{display:inline-block;padding:2px 8px;border-radius:12px;font-size:.67rem;font-weight:700;font-family:'DM Mono',monospace;background:rgba(41,128,185,.12);color:#5DADE2;border:1px solid rgba(41,128,185,.25);}
+.badge-tipo{display:inline-block;padding:2px 8px;border-radius:12px;font-size:.66rem;font-weight:600;}
+.badge-tipo.bancario{background:rgba(41,128,185,.12);color:#5DADE2;}
+.badge-tipo.privado{background:rgba(142,68,173,.12);color:#BB8FCE;}
+.badge-tipo.tesouro{background:rgba(197,160,89,.12);color:var(--gold);}
+.chev{width:18px;height:18px;border-radius:50%;background:var(--bg-card3);display:flex;align-items:center;justify-content:center;transition:transform .2s;}
+.asset-row.open .chev{transform:rotate(180deg);background:rgba(197,160,89,.12);}
+.chev svg{stroke:var(--tx2);}
+.asset-row.open .chev svg{stroke:var(--gold);}
+.asset-detail{display:none;padding:1rem 1.2rem;border-top:1px solid var(--bd);background:var(--bg-card);grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.75rem;}
+.asset-row.open .asset-detail{display:grid;}
+.det-label{font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--tx3);font-weight:600;margin-bottom:4px;}
+.det-val{font-size:.8rem;color:var(--tx);font-family:'DM Mono',monospace;}
+.det-val.norm{font-family:'DM Sans',sans-serif;}
+
+.empty{padding:60px 20px;text-align:center;}
+.empty-icon{font-size:2.2rem;opacity:.35;margin-bottom:12px;}
+.empty-text{font-size:.85rem;color:var(--tx3);line-height:1.7;}
+/* ── PAINEL DE RESTRIÇÕES ── */
+.rest-panel{background:var(--bg-card);border:1px solid rgba(192,57,43,.3);border-radius:16px;overflow:hidden;}
+.rest-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:1rem 1.4rem;border-bottom:1px solid var(--bd);flex-wrap:wrap;}
+.rest-header-left{display:flex;flex-direction:column;gap:4px;}
+.rest-title{font-size:.95rem;font-weight:600;color:var(--tx);}
+.rest-sub{font-size:.72rem;color:var(--tx3);font-family:'DM Mono',monospace;}
+.btn-export{display:inline-flex;align-items:center;gap:7px;background:rgba(39,174,96,.1);border:1px solid rgba(39,174,96,.3);color:#2ECC71;font-family:'DM Sans',sans-serif;font-size:.75rem;font-weight:600;padding:8px 16px;border-radius:10px;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.btn-export:hover{background:rgba(39,174,96,.18);border-color:rgba(39,174,96,.5);}
+.rest-header-actions{display:flex;align-items:center;gap:12px;}
+.ios-switch-wrap{display:inline-flex;align-items:center;gap:9px;cursor:pointer;user-select:none;}
+.ios-switch-label{font-family:'DM Sans',sans-serif;font-size:.75rem;font-weight:600;color:var(--tx2,var(--tx));white-space:nowrap;min-width:52px;}
+.ios-switch{position:relative;width:44px;height:26px;border-radius:999px;background:rgba(255,255,255,.14);border:1px solid var(--bd);transition:background .25s ease,border-color .25s ease;flex-shrink:0;}
+.ios-switch::after{content:'';position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.4);transition:transform .25s cubic-bezier(.4,0,.2,1);}
+.ios-switch.on{background:#2ECC71;border-color:#2ECC71;}
+.ios-switch.on::after{transform:translateX(18px);}
+.rest-table-head{display:grid;grid-template-columns:160px 1fr 1fr 110px 90px 80px 130px;align-items:center;gap:10px;padding:8px 14px;border-bottom:1px solid var(--bd);font-size:.6rem;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--tx3);background:var(--bg);}
+.rest-table-body{max-height:480px;overflow-y:auto;}
+.rest-table-body::-webkit-scrollbar{width:4px;}
+.rest-table-body::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px;}
+.rest-table-body::-webkit-scrollbar-thumb:hover{background:rgba(192,57,43,.5);}
+.rest-client-group{}
+.rest-client-header{display:flex;align-items:center;gap:8px;padding:8px 14px 6px;background:var(--bg-card2);border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:2;}
+.rest-client-name{font-size:.72rem;font-weight:600;color:var(--gold);text-transform:uppercase;letter-spacing:.08em;}
+.rest-client-code{font-size:.65rem;color:var(--tx3);font-family:'DM Mono',monospace;}
+.rest-client-badges{display:inline-flex;gap:4px;margin-left:4px;}
+.rest-row{display:grid;grid-template-columns:160px 1fr 1fr 110px 90px 80px 130px;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--bd);transition:background .1s;}
+.rest-row:last-child{border-bottom:none;}
+.rest-row:hover{background:var(--bg-card2);}
+.rest-row-client{font-size:.72rem;font-family:'DM Mono',monospace;color:var(--tx3);}
+.rest-row-emissor{font-size:.78rem;font-weight:500;color:var(--tx);}
+.rest-row-ativo{font-size:.7rem;color:var(--tx3);font-family:'DM Mono',monospace;}
+.rest-row-val{font-size:.78rem;font-family:'DM Mono',monospace;color:var(--tx2);text-align:right;}
+.rest-row-tipo,.rest-row-rating{text-align:center;}
+.rest-row-status{text-align:center;}
+.rest-footer{padding:8px 14px;border-top:1px solid var(--bd);font-size:.65rem;color:var(--tx3);display:flex;justify-content:space-between;align-items:center;background:var(--bg);}
+@media(max-width:900px){
+  .rest-table-head,.rest-row{grid-template-columns:120px 1fr 100px 110px;}
+  .rest-table-head span:nth-child(3),.rest-row .rest-row-ativo,
+  .rest-table-head span:nth-child(5),.rest-row .rest-row-tipo,
+  .rest-table-head span:nth-child(6),.rest-row .rest-row-rating{display:none;}
+}
+
+.footer{text-align:center;font-size:.68rem;color:var(--tx3);padding:1.75rem;margin-top:1rem;border-top:1px solid var(--bd);}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR PADRÃO HUB -->
+<div class="hub-topbar">
+    <div class="hub-topbar-left">
+        <div class="hub-pbf-badge">PBF</div>
+        <span class="hub-topbar-title">Hub Financeiro</span>
+        <button class="hub-back-btn" id="hubBackBtn">
+            <span class="material-symbols-outlined">arrow_back</span>
+            <span>Voltar ao início</span>
+        </button>
+    </div>
+    <div class="hub-topbar-center">
+        <span class="hub-active-tool">Comparador de Ativos</span>
+    </div>
+    <div class="hub-topbar-right">
+        <button class="hub-newtab-btn" id="hubNewTabBtn">
+            <span class="material-symbols-outlined">open_in_new</span>
+            <span>Nova aba</span>
+        </button>
+        <span class="hub-clock" id="hubClock"></span>
+        <button class="hub-theme-btn" id="hubThemeBtn">🌙</button>
+    </div>
+</div>
+
+<div class="page">
+
+  <!-- UPLOAD SECTION -->
+  <div class="upload-grid">
+
+    <!-- Posições -->
+    <div class="upload-card" id="cardPosicoes">
+      <span class="uc-label">Posições do Cliente:</span>
+      <div id="statusPosicoes" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <span class="st idle">Aguardando arquivo…</span>
+      </div>
+      <div class="drop-zone" id="dzPosicoes" title='Excel da corretora · aba "Posições" · Colunas: Cliente · Ativo · Emissor · Taxa · Vencimento · Financeiro'>
+        <input type="file" id="filePosicoes" accept=".xlsx,.xls">
+        <span class="dz-label"><strong>Carregar Excel</strong></span>
+      </div>
+    </div>
+
+    <!-- Cadastro de Clientes -->
+    <div class="upload-card" id="cardCadastro">
+      <span class="uc-label">Nome dos Clientes:</span>
+      <div id="statusCadastro" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <span class="st idle" id="stCadastroLabel">Aguardando arquivo…</span>
+      </div>
+      <div class="drop-zone" id="dzCadastro" title='Excel com código e nome dos clientes · Colunas: Código/ClientId · Nome/Razão Social'>
+        <input type="file" id="fileCadastro" accept=".xlsx,.xls">
+        <span class="dz-label"><strong>Carregar Cadastro</strong></span>
+      </div>
+    </div>
+
+    <!-- Base Referência -->
+    <div class="upload-card" id="cardBase">
+      <span class="uc-label">Base de Referência:</span>
+      <div id="statusBase" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <span class="st idle">Aguardando arquivo…</span>
+      </div>
+      <div class="drop-zone" id="dzBase" title='Excel do comitê · abas "Crédito Bancário" e "Crédito Privado" · Colunas: Base XP · Base Interna · Rating · Condição'>
+        <input type="file" id="fileBase" accept=".xlsx,.xls">
+        <span class="dz-label"><strong>Carregar Excel</strong></span>
+      </div>
+    </div>
+
+  </div><!-- /upload-grid -->
+
+  <!-- BUSCA RÁPIDA POR CÓDIGO -->
+  <div class="search-bar">
+    <span class="search-label">Cliente</span>
+    <input type="text" id="inputCliente" class="search-input" placeholder="Código ou nome do cliente" list="clienteDatalist" autocomplete="off">
+    <datalist id="clienteDatalist"></datalist>
+    <button class="btn-compare" id="btnComparar" onclick="comparar()" disabled>Comparar →</button>
+  </div>
+
+  <!-- FILTRO POR EMISSOR -->
+  <div id="issuerFilterSection" style="display:none;margin-bottom:1.75rem;">
+    <div class="sec">Busca por Emissor</div>
+    <div class="issuer-filter-wrap">
+      <div class="issuer-filter-header">
+        <span class="issuer-filter-label">🔍 Emissor</span>
+        <div class="issuer-search-box">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="issuerSearch" placeholder="Digite o nome do emissor (ex: BTG, XP, Bradesco…)" autocomplete="off">
+        </div>
+        <button class="issuer-clear-btn" id="issuerClearBtn" style="display:none;" onclick="clearIssuerFilter()">✕ Limpar</button>
+      </div>
+      <div class="issuer-results" id="issuerResults">
+        <div class="issuer-results-title" id="issuerResultsTitle"></div>
+        <div class="issuer-clients-grid" id="issuerClientsGrid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LISTA DE CLIENTES -->
+  <div class="clients-wrap" id="clientsSection" style="display:none;">
+    <div class="sec">Selecionar Cliente</div>
+    <div class="clients-toolbar">
+      <div class="search-box">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="clientSearch" placeholder="Filtrar por código ou nome" autocomplete="off">
+      </div>
+      <div class="sort-buttons">
+        <button class="sort-btn active" data-sort="id">Por ID</button>
+        <button class="sort-btn" data-sort="count">Por posições</button>
+      </div>
+      <div class="asset-type-filter">
+        <button class="sort-btn" id="assetTypeToggle">📊 Tipos de Ativos ▼</button>
+        <div class="asset-type-dropdown" id="assetTypeDropdown"></div>
+      </div>
+      <div class="alert-filter-btns">
+        <button class="alert-filter-btn" id="filterAprov"   data-alert="aprovado">✓ Aprovados</button>
+        <button class="alert-filter-btn" id="filterReprov"  data-alert="reprovado">⚠ Reprovados</button>
+        <button class="alert-filter-btn" id="filterSemCob"  data-alert="semCobertura">⚠ Sem Cobertura</button>
+        <button class="alert-filter-btn" id="filterConc"    data-alert="concentracao">📊 Conc. &gt;5%</button>
+      </div>
+      <span class="clients-stats" id="clientsStats"></span>
+    </div>
+    <div class="clients-table-wrap">
+      <div class="clients-table-head">
+        <span>Código do cliente</span>
+        <span style="text-align:center">Posições</span>
+        <span style="text-align:center">Emissores</span>
+        <span></span>
+      </div>
+      <div class="clients-table-body" id="clientsGrid"></div>
+      <div class="clients-table-footer" id="clientsFooter"></div>
+    </div>
+  </div>
+
+  <!-- PAINEL DE RESTRIÇÕES (todos os clientes com reprovado ou sem cobertura) -->
+  <div id="restricoesSection" style="display:none;margin-bottom:1.75rem;">
+    <div class="sec">Ativos com Restrição · Visão Geral</div>
+    <div class="rest-panel">
+      <div class="rest-header">
+        <div class="rest-header-left">
+          <span class="rest-title">Clientes com Ativos Reprovados ou Sem Cobertura</span>
+          <span class="rest-sub" id="restSub"></span>
+        </div>
+        <div class="rest-header-actions">
+          <div class="ios-switch-wrap" id="btnToggleRestricoes" onclick="toggleRestricoes()" role="switch" aria-checked="false" tabindex="0">
+            <span class="ios-switch-label" id="btnToggleRestricoesLabel">Mostrar</span>
+            <span class="ios-switch" id="iosSwitchRestricoes"></span>
+          </div>
+          <button class="btn-export" id="btnExportRestricoes" onclick="exportarRestricoes()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Exportar Excel
+          </button>
+        </div>
+      </div>
+      <div id="restBodyWrap" style="display:none;">
+        <div class="rest-table-head">
+          <span>Cliente</span>
+          <span>Emissor</span>
+          <span>Ativo</span>
+          <span style="text-align:right">Financeiro</span>
+          <span style="text-align:center">Tipo</span>
+          <span style="text-align:center">Rating</span>
+          <span style="text-align:center">Situação</span>
+        </div>
+        <div class="rest-table-body" id="restTableBody"></div>
+        <div class="rest-footer" id="restFooter"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div id="resultSection">
+    <div class="result-panel">
+      <div class="empty">
+        <div class="empty-icon">🔍</div>
+        <div class="empty-text">Carregue os dois arquivos e selecione um cliente<br>para iniciar a comparação.</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<div class="footer">Pleno Gestão de Investimentos · Uso exclusivo interno</div>
+
+<script>
+// ─────────────────────────────────────────────────────────────────
+//  STATE
+// ─────────────────────────────────────────────────────────────────
+let dadosPosicoes = [];   // rows from "Posições"
+let dadosBase     = [];   // merged rows from both base sheets
+let currentClientsList = [];   // [{id,count}]
+let clientAssetTypes   = {};   // id -> Set(tipo)
+let clientNames        = {};   // id -> nome
+let clientAlerts       = {};   // id -> {aprovadoCount, reprovadoCount, semCoberturaCount, concCount}
+let currentAlertFilter = null; // 'aprovado' | 'reprovado' | 'semCobertura' | 'concentracao' | null
+let currentClient = null;
+let currentSort   = 'id';
+let currentFilter = '';
+let selectedAssetTypes = [];
+let lastResultados = [];
+
+// ─────────────────────────────────────────────────────────────────
+//  TOPBAR: voltar / nova aba / relógio / tema
+// ─────────────────────────────────────────────────────────────────
+document.getElementById('hubBackBtn').addEventListener('click', () => {
+  if (window.self !== window.top) {
+    window.parent.postMessage({ action:'hubNavigate', target:'home' }, '*');
+  } else {
+    window.location.href = "https://pabloads2020-lang.github.io/Dashboard-Ferramentas-Integradas/";
+  }
+});
+document.getElementById('hubNewTabBtn').addEventListener('click', () => {
+  window.open(window.location.href, '_blank');
+});
+(function clock(){
+  const el = document.getElementById('hubClock');
+  if(!el) return;
+  const now = new Date();
+  el.textContent = now.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'short',year:'numeric'})
+    + ' · ' + now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  setTimeout(clock, 1000);
+})();
+const themeBtn = document.getElementById('hubThemeBtn');
+const savedTheme = localStorage.getItem('theme');
+if (savedTheme === 'light') { document.body.classList.add('light'); themeBtn.textContent = '☀️'; }
+themeBtn.addEventListener('click', () => {
+  const isLight = document.body.classList.toggle('light');
+  themeBtn.textContent = isLight ? '☀️' : '🌙';
+  localStorage.setItem('theme', isLight ? 'light' : 'dark');
+});
+
+// ─────────────────────────────────────────────────────────────────
+//  UPLOAD HELPERS
+// ─────────────────────────────────────────────────────────────────
+function bindUpload(dzId, inputId, handler) {
+  const dz = document.getElementById(dzId);
+  const inp = document.getElementById(inputId);
+  inp.addEventListener('change', e => { if(e.target.files[0]) handler(e.target.files[0]); });
+  dz.addEventListener('dragover',  e => { e.preventDefault(); dz.classList.add('dragover'); });
+  dz.addEventListener('dragleave', ()=> dz.classList.remove('dragover'));
+  dz.addEventListener('drop', e => {
+    e.preventDefault(); dz.classList.remove('dragover');
+    if(e.dataTransfer.files[0]) handler(e.dataTransfer.files[0]);
+  });
+}
+
+function readXlsx(file, cb) {
+  if(typeof XLSX === 'undefined') {
+    cb(null, 'Biblioteca XLSX não carregou. Verifique conexão e recarregue a página.');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = e => {
+    try { cb(XLSX.read(e.target.result, {type:'array', cellDates:true}), null); }
+    catch(err) { cb(null, 'Erro ao ler arquivo: ' + err.message); }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function setStatus(elId, type, msg) {
+  const clearBtn = type === 'ok'
+    ? `<button class="btn-clr" onclick="clearFile('${elId}')">✕ Limpar</button>`
+    : '';
+  document.getElementById(elId).innerHTML = `<span class="st ${type}">${msg}</span>${clearBtn}`;
+}
+
+function clearFile(statusElId) {
+  if(statusElId === 'statusPosicoes') {
+    dadosPosicoes = []; currentClientsList = []; clientAssetTypes = {}; clientAlerts = {}; clientNames = {}; currentClient = null;
+    currentAlertFilter = null;
+    document.querySelectorAll('.alert-filter-btn').forEach(b => b.className = 'alert-filter-btn');
+    selectedAssetTypes = [];
+    document.getElementById('filePosicoes').value = '';
+    document.getElementById('dzPosicoes').classList.remove('loaded');
+    document.getElementById('clientsSection').style.display = 'none';
+    document.getElementById('issuerFilterSection').style.display = 'none';
+    document.getElementById('restricoesSection').style.display = 'none';
+    restricoesData = [];
+    document.getElementById('clientsGrid').innerHTML = '';
+    document.getElementById('clientsFooter').textContent = '';
+    document.getElementById('assetTypeDropdown').innerHTML = '';
+    document.getElementById('inputCliente').value = '';
+    clearIssuerFilter();
+    document.getElementById('resultSection').innerHTML = `
+      <div class="result-panel">
+        <div class="empty">
+          <div class="empty-icon">🔍</div>
+          <div class="empty-text">Carregue os dois arquivos e selecione um cliente<br>para iniciar a comparação.</div>
+        </div>
+      </div>`;
+  } else {
+    dadosBase = [];
+    document.getElementById('fileBase').value = '';
+    document.getElementById('dzBase').classList.remove('loaded');
+  }
+  setStatus(statusElId, 'idle', 'Aguardando arquivo…');
+  checkReady();
+}
+
+function markDropZone(dzId, ok) {
+  const dz = document.getElementById(dzId);
+  dz.classList.toggle('loaded', ok);
+  const card = dz.closest('.upload-card');
+  if (card) card.classList.toggle('loaded', ok);
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  NORMALISATION & FUZZY MATCH
+// ─────────────────────────────────────────────────────────────────
+const NOISE = new Set([
+  'DE','DO','DA','DOS','DAS','E','A','O','OS','AS','NO','NA',
+  'EM','COM','POR','PARA','SEM','APOS','S','SA','SIA','BCO','CIA','GRP',
+  'FIC','FII','FIA','FIM','CFI','SCFI','IP','BM','PRE','POS','OUT','IN'
+]);
+
+function norm(str) {
+  if (!str) return '';
+  let s = String(str).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase();
+  s = s.replace(/[.\-\/\\,]/g,' ');
+  s = s.replace(/\bBCO\b/g,'BANCO').replace(/\bCIA\b/g,'COMPANHIA');
+  s = s.replace(/\b(CDB|LCI|LCA|CRI|CRA|LF|LFT|LIG|NTN|DEBENTURE|DEB)\b/g,' ');
+  s = s.replace(/\b(LTDA|ME|EIRELI|EPP|SPA|SPE|SS)\b/g,' ');
+  return s.replace(/\s+/g,' ').trim();
+}
+
+function tokens(str) {
+  return new Set(norm(str).split(' ').filter(w => w.length >= 2 && !NOISE.has(w)));
+}
+
+function sim(a, b) {
+  const ta = tokens(a), tb = tokens(b);
+  if(!ta.size || !tb.size) return 0;
+  let shared = 0;
+  ta.forEach(t => { if(tb.has(t)) shared++; });
+  const asym = shared / Math.min(ta.size, tb.size);
+  const jacc  = shared / (ta.size + tb.size - shared);
+  const na = norm(a), nb = norm(b);
+  const subBonus = (na.length >= 3 && (nb.includes(na) || na.includes(nb))) ? 0.3 : 0;
+  return Math.min(1.0, asym * 0.7 + jacc * 0.3 + subBonus);
+}
+
+function findInBase(emissorCliente) {
+  let best = null, bestScore = 0;
+  const THRESHOLD = 0.50;
+  for (const row of dadosBase) {
+    const score = Math.max(
+      sim(emissorCliente, row.baseXP),
+      sim(emissorCliente, row.baseInterna)
+    );
+    if (score > bestScore) { bestScore = score; best = row; }
+  }
+  return bestScore >= THRESHOLD ? { ...best, score: bestScore } : null;
+}
+
+function tipoDoEmissor(emissor) {
+  if (norm(emissor).includes('TESOURO')) return 'Tesouro';
+  const match = findInBase(emissor);
+  return match ? match.tipo : 'Sem Cobertura';
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  LOAD POSIÇÕES
+// ─────────────────────────────────────────────────────────────────
+bindUpload('dzPosicoes','filePosicoes', file => {
+  readXlsx(file, (wb, err) => {
+    if(err) { setStatus('statusPosicoes','err','❌ '+err); markDropZone('dzPosicoes',false); return; }
+
+    const sheetName = wb.SheetNames.find(s => s.toLowerCase().includes('posi'));
+    if (!sheetName) {
+      setStatus('statusPosicoes','err','❌ Aba "Posições" não encontrada');
+      return;
+    }
+    const rows = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], {defval:''});
+    if (!rows.length) { setStatus('statusPosicoes','err','❌ Arquivo vazio'); return; }
+
+    dadosPosicoes = rows.map(r => {
+      const k = Object.keys(r);
+      const get = (...names) => {
+        for(const n of names) {
+          const found = k.find(kk => kk.trim().toLowerCase() === n.toLowerCase());
+          if(found !== undefined) return r[found];
+        }
+        return '';
+      };
+      return {
+        cliente:    String(get('Cliente') || '').trim(),
+        ativo:      String(get('Ativo') || '').trim(),
+        emissor:    String(get('Emissor') || '').trim(),
+        taxa:       String(get('Taxa') || '').trim(),
+        vencimento: get('Data de Vencimento') || get('Vencimento') || '',
+        financeiro: parseFloat(get('Financeiro') || 0),
+      };
+    }).filter(r => r.cliente && r.emissor);
+
+    const nPos = dadosPosicoes.length;
+    const clientesSet = [...new Set(dadosPosicoes.map(r => r.cliente))];
+
+    setStatus('statusPosicoes','ok',`✓ ${nPos} posições · ${clientesSet.length} clientes`);
+    markDropZone('dzPosicoes', true);
+    buildClientsList();
+    document.getElementById('issuerFilterSection').style.display = 'block';
+    checkReady();
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────
+//  LOAD BASE REFERÊNCIA
+// ─────────────────────────────────────────────────────────────────
+bindUpload('dzBase','fileBase', file => {
+  readXlsx(file, (wb, err) => {
+    if(err) { setStatus('statusBase','err','❌ '+err); markDropZone('dzBase',false); return; }
+
+    const sheetBanc = wb.SheetNames.find(s => s.toLowerCase().includes('banc'));
+    const sheetPriv = wb.SheetNames.find(s => s.toLowerCase().includes('priv'));
+
+    if(!sheetBanc && !sheetPriv) {
+      setStatus('statusBase','err','❌ Abas "Crédito Bancário" / "Crédito Privado" não encontradas');
+      return;
+    }
+
+    dadosBase = [];
+    let nBanc = 0, nPriv = 0;
+
+    function parseSheet(sheetName, tipo) {
+      if(!sheetName) return 0;
+      const rows = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], {defval:''});
+      rows.forEach(r => {
+        const keys = Object.keys(r);
+        const get = (...names) => {
+          for(const n of names) {
+            const f = keys.find(k => k.trim().toLowerCase().includes(n.toLowerCase()));
+            if(f !== undefined) return r[f];
+          } return '';
+        };
+        const clean = v => { const s = String(v||'').trim(); return (s==='nan'||s==='NaN'||s==='undefined'||s==='-') ? '' : s; };
+        const baseXP     = clean(get('Base XP','xp','base xp'));
+        const baseInterna= clean(get('Base Interna','interna','base interna'));
+        const rating     = clean(get('Rating','rating')) || '—';
+        const condicao   = clean(get('Condição','Condicao','condicao','condição'));
+        if(baseXP || baseInterna) {
+          dadosBase.push({baseXP, baseInterna, rating, condicao, tipo});
+        }
+      });
+      return rows.length;
+    }
+
+    nBanc = parseSheet(sheetBanc, 'Bancário');
+    nPriv = parseSheet(sheetPriv, 'Privado');
+
+    if(!dadosBase.length) { setStatus('statusBase','err','❌ Nenhum dado encontrado nas abas'); return; }
+
+    setStatus('statusBase','ok',`✓ ${dadosBase.length} emissores · ${nBanc} Bancário · ${nPriv} Privado`);
+    markDropZone('dzBase', true);
+    if (currentClientsList.length) buildClientsList(true);
+    checkReady();
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────
+//  CLIENTS LIST (build / filter / sort / render)
+// ─────────────────────────────────────────────────────────────────
+function buildClientsList(keepSelection) {
+  const byClient = {};
+  dadosPosicoes.forEach(r => {
+    if(!byClient[r.cliente]) byClient[r.cliente] = { ids:new Set(), count:0, financeiro:0 };
+    byClient[r.cliente].count++;
+    byClient[r.cliente].ids.add(r.emissor);
+    byClient[r.cliente].financeiro += r.financeiro;
+  });
+  currentClientsList = Object.keys(byClient).map(id => ({ id, count: byClient[id].count, emissores: byClient[id].ids.size }));
+
+  // Tipos de ativo e alertas por cliente (depende da base)
+  clientAssetTypes = {};
+  clientAlerts     = {};
+  dadosPosicoes.forEach(r => {
+    const tipo = dadosBase.length ? tipoDoEmissor(r.emissor) : '—';
+    if(!clientAssetTypes[r.cliente]) clientAssetTypes[r.cliente] = new Set();
+    clientAssetTypes[r.cliente].add(tipo);
+  });
+
+  if (dadosBase.length) {
+    // Agrupa por cliente+emissor para calcular alertas
+    const byClientEmissor = {};
+    dadosPosicoes.forEach(r => {
+      const key = r.cliente + '|||' + r.emissor;
+      if(!byClientEmissor[key]) byClientEmissor[key] = { cliente:r.cliente, emissor:r.emissor, financeiro:0 };
+      byClientEmissor[key].financeiro += r.financeiro;
+    });
+    Object.values(byClientEmissor).forEach(entry => {
+      const cid = entry.cliente;
+      if(!clientAlerts[cid]) clientAlerts[cid] = { aprovadoCount:0, reprovadoCount:0, semCoberturaCount:0, concCount:0 };
+      let condicao;
+      if(norm(entry.emissor).includes('TESOURO')) {
+        condicao = 'Aprovado';
+      } else {
+        const match = findInBase(entry.emissor);
+        condicao = match ? match.condicao : 'Sem Cobertura';
+      }
+      if(condicao === 'Aprovado')       clientAlerts[cid].aprovadoCount++;
+      else if(condicao === 'Reprovado') clientAlerts[cid].reprovadoCount++;
+      else                               clientAlerts[cid].semCoberturaCount++;
+      // Concentração: emissor > 5% do patrimônio total do cliente
+      const totalCliente = byClient[cid] ? byClient[cid].financeiro : 0;
+      if(totalCliente > 0 && (entry.financeiro / totalCliente) > 0.05) {
+        clientAlerts[cid].concCount++;
+      }
+    });
+  }
+
+  document.getElementById('clientsSection').style.display = 'block';
+  renderAssetTypeDropdown();
+  renderClientsList();
+  renderRestricoes();
+  buildClienteDatalist();
+  if (!keepSelection) checkReady();
+}
+
+
+function renderAssetTypeDropdown() {
+  const allTypes = new Set();
+  Object.values(clientAssetTypes).forEach(s => s.forEach(t => allTypes.add(t)));
+  const order = ['Tesouro','Bancário','Privado','Sem Cobertura','—'];
+  const types = [...allTypes].sort((a,b) => order.indexOf(a)-order.indexOf(b));
+  const dropdown = document.getElementById('assetTypeDropdown');
+  dropdown.innerHTML = types.map(t => {
+    const checked = selectedAssetTypes.includes(t) ? 'checked' : '';
+    return `<label><input type="checkbox" value="${esc(t)}" ${checked} onchange="toggleAssetType('${esc(t)}')"> ${esc(t)}</label>`;
+  }).join('');
+}
+
+function toggleAssetType(type) {
+  if (selectedAssetTypes.includes(type)) selectedAssetTypes = selectedAssetTypes.filter(t => t !== type);
+  else selectedAssetTypes.push(type);
+  const toggleBtn = document.getElementById('assetTypeToggle');
+  toggleBtn.textContent = selectedAssetTypes.length ? `📊 Tipos (${selectedAssetTypes.length}) ▼` : '📊 Tipos de Ativos ▼';
+  renderClientsList();
+}
+
+function renderClientsList() {
+  const grid = document.getElementById('clientsGrid');
+  const stats = document.getElementById('clientsStats');
+  const footer = document.getElementById('clientsFooter');
+
+  let filtered = currentClientsList.filter(c => {
+    // texto: código ou nome
+    const q = currentFilter.toLowerCase();
+    const nome = (clientNames[c.id] || '').toLowerCase();
+    if (q && !c.id.toString().toLowerCase().includes(q) && !nome.includes(q)) return false;
+    // tipos de ativo
+    if (selectedAssetTypes.length > 0) {
+      const types = clientAssetTypes[c.id] || new Set();
+      if (!selectedAssetTypes.some(t => types.has(t))) return false;
+    }
+    // filtro de alerta
+    if (currentAlertFilter) {
+      const al = clientAlerts[c.id] || {};
+      if (currentAlertFilter === 'aprovado'      && !(al.aprovadoCount   > 0)) return false;
+      if (currentAlertFilter === 'reprovado'     && !(al.reprovadoCount  > 0)) return false;
+      if (currentAlertFilter === 'semCobertura'  && !(al.semCoberturaCount > 0)) return false;
+      if (currentAlertFilter === 'concentracao'  && !(al.concCount > 0)) return false;
+    }
+    return true;
+  });
+
+  if (currentSort === 'id') {
+    filtered.sort((a,b) => { const na=Number(a.id), nb=Number(b.id); return !isNaN(na)&&!isNaN(nb) ? na-nb : String(a.id).localeCompare(String(b.id)); });
+  } else {
+    filtered.sort((a,b) => b.count - a.count);
+  }
+
+  const chevron = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>`;
+  grid.innerHTML = filtered.map(c => {
+    const isActive = c.id === currentClient;
+    const nome = clientNames[c.id] || '';
+    const idDisplay = nome
+      ? `<span style="font-size:.62rem;font-weight:400;text-transform:uppercase;letter-spacing:.10em;color:var(--gold)">${esc(nome)}</span><span style="font-size:.62rem;font-weight:400;margin-left:5px;font-family:'DM Mono',monospace;color:var(--gold);opacity:.7;">${esc(c.id)}</span>`
+      : esc(c.id);
+    const al = clientAlerts[c.id] || {};
+    const hasBadges = al.aprovadoCount > 0 || al.reprovadoCount > 0 || al.semCoberturaCount > 0 || al.concCount > 0;
+    const badges = hasBadges ? `<span class="cr-alert-badges">
+      ${al.aprovadoCount    > 0 ? `<span class="cr-alert aprov"><span class="cr-alert-dot"></span>${al.aprovadoCount} Aprovado${al.aprovadoCount>1?'s':''}</span>` : ''}
+      ${al.reprovadoCount   > 0 ? `<span class="cr-alert reprov"><span class="cr-alert-dot"></span>${al.reprovadoCount} Reprovado${al.reprovadoCount>1?'s':''}</span>` : ''}
+      ${al.semCoberturaCount> 0 ? `<span class="cr-alert semcob"><span class="cr-alert-dot"></span>${al.semCoberturaCount} Sem Cobertura</span>` : ''}
+      ${al.concCount        > 0 ? `<span class="cr-alert conc"><span class="cr-alert-dot"></span>${al.concCount} Ativo${al.concCount>1?'s':''} &gt;5%</span>` : ''}
+    </span>` : '';
+    return `<div class="client-row${isActive?' active':''}" data-id="${esc(c.id)}" onclick="selectClient('${esc(c.id)}')">
+      <div class="cr-id"><span class="cr-id-dot"></span>${idDisplay}${badges}</div>
+      <div class="cr-pos">${c.count}</div>
+      <div class="cr-label">${c.emissores}</div>
+      <div class="cr-arrow">${chevron}</div>
+    </div>`;
+  }).join('');
+
+  stats.textContent = `${filtered.length} de ${currentClientsList.length} clientes`;
+  footer.textContent = `${filtered.length} cliente${filtered.length!==1?'s':''} exibido${filtered.length!==1?'s':''}`;
+}
+
+
+function selectClient(id) {
+  currentClient = id;
+  document.getElementById('inputCliente').value = id;
+  document.querySelectorAll('.client-row').forEach(r => r.classList.toggle('active', r.dataset.id === id));
+  comparar();
+}
+
+document.getElementById('clientSearch').addEventListener('input', e => {
+  currentFilter = e.target.value.trim();
+  renderClientsList();
+});
+
+document.querySelectorAll('.sort-btn[data-sort]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    currentSort = btn.getAttribute('data-sort');
+    document.querySelectorAll('.sort-btn[data-sort]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderClientsList();
+  });
+});
+
+// ── FILTROS DE ALERTA ──
+document.querySelectorAll('.alert-filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const alert = btn.getAttribute('data-alert');
+    const clsMap = { aprovado:'active-aprov', reprovado:'active-reprov', semCobertura:'active-semcob', concentracao:'active-conc' };
+    if (currentAlertFilter === alert) {
+      currentAlertFilter = null;
+      document.querySelectorAll('.alert-filter-btn').forEach(b => b.className = 'alert-filter-btn');
+    } else {
+      currentAlertFilter = alert;
+      document.querySelectorAll('.alert-filter-btn').forEach(b => b.className = 'alert-filter-btn');
+      btn.classList.add(clsMap[alert] || '');
+    }
+    renderClientsList();
+  });
+});
+
+(function(){
+  const toggleBtn = document.getElementById('assetTypeToggle');
+  const dropdown = document.getElementById('assetTypeDropdown');
+  toggleBtn.addEventListener('click', e => { e.stopPropagation(); dropdown.classList.toggle('open'); });
+  document.addEventListener('click', e => {
+    if (!dropdown.contains(e.target) && e.target !== toggleBtn) dropdown.classList.remove('open');
+  });
+})();
+
+// ─────────────────────────────────────────────────────────────────
+//  BUSCA POR EMISSOR
+// ─────────────────────────────────────────────────────────────────
+document.getElementById('issuerSearch').addEventListener('input', e => {
+  const q = e.target.value.trim();
+  document.getElementById('issuerClearBtn').style.display = q ? 'inline-block' : 'none';
+  renderIssuerResults(q);
+});
+
+function clearIssuerFilter() {
+  const input = document.getElementById('issuerSearch');
+  if (input) input.value = '';
+  document.getElementById('issuerClearBtn').style.display = 'none';
+  document.getElementById('issuerResults').classList.remove('visible');
+}
+
+function renderIssuerResults(query) {
+  const results = document.getElementById('issuerResults');
+  const grid    = document.getElementById('issuerClientsGrid');
+  const title   = document.getElementById('issuerResultsTitle');
+
+  if (!query || query.length < 2) { results.classList.remove('visible'); return; }
+
+  const qNorm = norm(query);
+  const matchedIssuers = new Set();
+  dadosPosicoes.forEach(r => { if (r.emissor && norm(r.emissor).includes(qNorm)) matchedIssuers.add(r.emissor); });
+
+  results.classList.add('visible');
+
+  if (!matchedIssuers.size) {
+    title.innerHTML = `Nenhum emissor encontrado para <span>${esc(query)}</span>`;
+    grid.innerHTML = '<div class="issuer-no-results">Tente outro termo de busca.</div>';
+    return;
+  }
+
+  const clientMap = {};
+  dadosPosicoes.forEach(r => {
+    if (!matchedIssuers.has(r.emissor)) return;
+    if (!clientMap[r.cliente]) clientMap[r.cliente] = { issuers:new Set(), total:0 };
+    clientMap[r.cliente].issuers.add(r.emissor);
+    clientMap[r.cliente].total += r.financeiro;
+  });
+
+  const entries = Object.entries(clientMap);
+  title.innerHTML = `<span>${entries.length}</span> cliente${entries.length!==1?'s':''} com posição em emissores que contêm "${esc(query)}"`;
+  grid.innerHTML = entries.map(([cid, d]) => `
+    <div class="issuer-client-card" onclick="selectClient('${esc(cid)}')">
+      <div class="issuer-client-id">${clientNames[cid] ? esc(clientNames[cid]) : esc(cid)}</div>
+      ${clientNames[cid] ? `<div class="issuer-client-name" style="font-size:.65rem;color:var(--tx3);margin-top:2px;font-family:'DM Mono',monospace;">${esc(cid)}</div>` : ''}
+      <div class="issuer-client-assets">${d.issuers.size} emissor${d.issuers.size!==1?'es':''} · R$ ${d.total.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
+    </div>`).join('');
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  LOAD CADASTRO (nomes de clientes — opcional)
+// ─────────────────────────────────────────────────────────────────
+function loadCadastro(file) {
+  readXlsx(file, (wb, err) => {
+    const label  = document.getElementById('stCadastroLabel');
+    const dzEl   = document.getElementById('dzCadastro');
+    const cardEl = document.getElementById('cardCadastro');
+    if (err) { label.className='st err'; label.textContent='❌ Erro ao ler arquivo'; return; }
+    const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {defval:''});
+    clientNames = {};
+    let found = 0;
+    rows.forEach(row => {
+      const keys    = Object.keys(row);
+      const codeKey = keys.find(k => /c[oó]d|codigo|code|client/i.test(k));
+      const nameKey = keys.find(k => /nome|name|raz[aã]o|cliente/i.test(k));
+      if (codeKey && nameKey) {
+        const code = String(row[codeKey]).trim();
+        const name = String(row[nameKey]).trim();
+        if (code && name) { clientNames[code]=name; found++; }
+      }
+    });
+    if (found > 0) {
+      label.className='st ok'; label.textContent=`✓ ${found} clientes`;
+      dzEl.classList.add('loaded'); if(cardEl) cardEl.classList.add('loaded');
+      if(currentClientsList.length) renderClientsList();
+      if(dadosPosicoes.length && dadosBase.length) renderRestricoes();
+      buildClienteDatalist();
+    } else {
+      label.className='st err'; label.textContent='❌ Colunas não reconhecidas';
+    }
+  });
+}
+document.getElementById('fileCadastro').addEventListener('change', e => { if(e.target.files[0]) loadCadastro(e.target.files[0]); });
+(function(){
+  const dz=document.getElementById('dzCadastro');
+  dz.addEventListener('dragover',  e=>{e.preventDefault();dz.classList.add('dragover');});
+  dz.addEventListener('dragleave', ()=>dz.classList.remove('dragover'));
+  dz.addEventListener('drop', e=>{
+    e.preventDefault(); dz.classList.remove('dragover');
+    if(e.dataTransfer.files[0]) loadCadastro(e.dataTransfer.files[0]);
+  });
+})();
+
+
+function checkReady() {
+  const ok = dadosPosicoes.length > 0 && dadosBase.length > 0;
+  document.getElementById('btnComparar').disabled = !ok;
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  PAINEL DE RESTRIÇÕES (todos os clientes com reprovado/sem cob.)
+// ─────────────────────────────────────────────────────────────────
+let restricoesData = []; // cache para exportação
+
+function renderRestricoes() {
+  if (!dadosPosicoes.length || !dadosBase.length) return;
+
+  // Agrupa posições por cliente+emissor
+  const byClientEmissor = {};
+  dadosPosicoes.forEach(r => {
+    const key = r.cliente + '|||' + r.emissor;
+    if (!byClientEmissor[key]) byClientEmissor[key] = { cliente:r.cliente, emissor:r.emissor, financeiro:0, ativos:[], taxa:r.taxa, vencimento:r.vencimento };
+    byClientEmissor[key].financeiro += r.financeiro;
+    if (!byClientEmissor[key].ativos.includes(r.ativo)) byClientEmissor[key].ativos.push(r.ativo);
+  });
+
+  // Classifica e filtra só reprovado/sem cobertura
+  const linhas = [];
+  Object.values(byClientEmissor).forEach(entry => {
+    let condicao, tipo, rating;
+    if (norm(entry.emissor).includes('TESOURO')) {
+      condicao = 'Aprovado'; tipo = 'Tesouro'; rating = 'AAA';
+    } else {
+      const match = findInBase(entry.emissor);
+      if (match) { condicao = match.condicao; tipo = match.tipo; rating = match.rating; }
+      else        { condicao = 'Sem Cobertura'; tipo = '—'; rating = '—'; }
+    }
+    if (condicao === 'Reprovado' || condicao === 'Sem Cobertura') {
+      linhas.push({ ...entry, condicao, tipo, rating });
+    }
+  });
+
+  restricoesData = linhas;
+
+  const section = document.getElementById('restricoesSection');
+  const body    = document.getElementById('restTableBody');
+  const footer  = document.getElementById('restFooter');
+  const sub     = document.getElementById('restSub');
+
+  if (!linhas.length) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+
+  // Agrupa por cliente para exibir com cabeçalho de grupo
+  const byClient = {};
+  linhas.forEach(l => {
+    if (!byClient[l.cliente]) byClient[l.cliente] = [];
+    byClient[l.cliente].push(l);
+  });
+  const clientIds = Object.keys(byClient).sort((a,b) => {
+    const na=Number(a), nb=Number(b);
+    return !isNaN(na)&&!isNaN(nb) ? na-nb : a.localeCompare(b);
+  });
+
+  const fmtBRL  = v => 'R$ '+(+v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const fmtDate = d => {
+    if(!d) return '—';
+    if(d instanceof Date) return d.toLocaleDateString('pt-BR');
+    const s = String(d).substring(0,10);
+    return s.includes('-') ? s.split('-').reverse().join('/') : s;
+  };
+  const condClass = c => c==='Reprovado'?'reprovado':'semcobertura';
+  const tipoClass = t => t==='Bancário'?'bancario':t==='Privado'?'privado':'tesouro';
+
+  body.innerHTML = clientIds.map(cid => {
+    const rows  = byClient[cid];
+    const nome  = clientNames[cid] || '';
+    const nRep  = rows.filter(r=>r.condicao==='Reprovado').length;
+    const nSem  = rows.filter(r=>r.condicao==='Sem Cobertura').length;
+    const badges = [
+      nRep ? `<span class="cr-alert reprov"><span class="cr-alert-dot"></span>${nRep} Reprovado${nRep>1?'s':''}</span>` : '',
+      nSem ? `<span class="cr-alert semcob"><span class="cr-alert-dot"></span>${nSem} Sem Cobertura</span>` : ''
+    ].filter(Boolean).join('');
+    const header = `<div class="rest-client-header">
+      ${nome ? `<span class="rest-client-name">${esc(nome)}</span><span class="rest-client-code">${esc(cid)}</span>` : `<span class="rest-client-name">${esc(cid)}</span>`}
+      <span class="rest-client-badges">${badges}</span>
+    </div>`;
+    const rowsHtml = rows.map(r => `
+      <div class="rest-row">
+        <div class="rest-row-client">${esc(cid)}</div>
+        <div class="rest-row-emissor">${esc(r.emissor)}</div>
+        <div class="rest-row-ativo">${esc(r.ativos.join(', '))}</div>
+        <div class="rest-row-val">${fmtBRL(r.financeiro)}</div>
+        <div class="rest-row-tipo">${r.tipo!=='—'?`<span class="badge-tipo ${tipoClass(r.tipo)}">${esc(r.tipo)}</span>`:'<span style="color:var(--tx3)">—</span>'}</div>
+        <div class="rest-row-rating">${r.rating!=='—'?`<span class="badge-rating">${esc(r.rating)}</span>`:'<span style="color:var(--tx3)">—</span>'}</div>
+        <div class="rest-row-status"><span class="badge ${condClass(r.condicao)}"><span class="bd"></span>${esc(r.condicao)}</span></div>
+      </div>`).join('');
+    return `<div class="rest-client-group">${header}${rowsHtml}</div>`;
+  }).join('');
+
+  const totalClientes = clientIds.length;
+  const totalLinhas   = linhas.length;
+  const totalVal      = linhas.reduce((s,l)=>s+l.financeiro,0);
+  sub.textContent = `${totalClientes} cliente${totalClientes!==1?'s':''} · ${totalLinhas} posição${totalLinhas!==1?'ões':''} com restrição`;
+  footer.innerHTML = `<span>${totalClientes} clientes · ${totalLinhas} posições</span><span style="font-family:'DM Mono',monospace;">${fmtBRL(totalVal)} em restrição</span>`;
+}
+
+let restricoesVisible = false;
+function toggleRestricoes() {
+  restricoesVisible = !restricoesVisible;
+  const wrap    = document.getElementById('restBodyWrap');
+  const sw      = document.getElementById('iosSwitchRestricoes');
+  const wrapBtn = document.getElementById('btnToggleRestricoes');
+  const label   = document.getElementById('btnToggleRestricoesLabel');
+  wrap.style.display = restricoesVisible ? '' : 'none';
+  sw.classList.toggle('on', restricoesVisible);
+  wrapBtn.setAttribute('aria-checked', String(restricoesVisible));
+  label.textContent = restricoesVisible ? 'Esconder' : 'Mostrar';
+}
+document.getElementById('btnToggleRestricoes').addEventListener('keydown', e => {
+  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleRestricoes(); }
+});
+
+function exportarRestricoes() {
+  if (typeof XLSX === 'undefined') { alert('Biblioteca XLSX não carregou. Recarregue a página.'); return; }
+  if (!restricoesData.length) { alert('Nenhuma restrição para exportar.'); return; }
+
+  const fmtBRL = v => (+v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const fmtDate = d => {
+    if(!d) return '';
+    if(d instanceof Date) return d.toLocaleDateString('pt-BR');
+    const s = String(d).substring(0,10);
+    return s.includes('-') ? s.split('-').reverse().join('/') : s;
+  };
+
+  const rows = restricoesData.map(r => ({
+    'Código do Cliente':  r.cliente,
+    'Nome do Cliente':    clientNames[r.cliente] || '',
+    'Emissor':            r.emissor,
+    'Ativos':             r.ativos.join(', '),
+    'Financeiro (R$)':    fmtBRL(r.financeiro),
+    'Taxa':               r.taxa || '',
+    'Vencimento':         fmtDate(r.vencimento),
+    'Tipo':               r.tipo,
+    'Rating':             r.rating,
+    'Situação':           r.condicao,
+  }));
+
+  const ws = XLSX.utils.json_to_sheet(rows);
+  // Larguras de coluna
+  ws['!cols'] = [12,30,28,20,16,10,12,12,8,16].map(w=>({wch:w}));
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Restrições');
+
+  const hoje = new Date().toLocaleDateString('pt-BR').replace(/\//g,'-');
+  XLSX.writeFile(wb, `restricoes_${hoje}.xlsx`);
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  COMPARE
+// ─────────────────────────────────────────────────────────────────
+function buildClienteDatalist() {
+  const dl = document.getElementById('clienteDatalist');
+  if (!dl) return;
+  dl.innerHTML = currentClientsList.map(c => {
+    const nome = clientNames[c.id] || '';
+    return `<option value="${esc(c.id)}"${nome ? ` label="${esc(nome)}"` : ''}>${nome ? esc(nome) : ''}</option>`;
+  }).join('');
+}
+
+// Resolve o texto digitado (código OU nome do cliente) para o código do cliente
+function resolveClientId(query) {
+  if (!query) return null;
+  const q = query.trim();
+  if (!q) return null;
+
+  // 1) match exato por código
+  if (currentClientsList.some(c => c.id === q)) return q;
+
+  const qNorm = norm(q);
+
+  // 2) match exato por nome (ignorando acentos/caixa)
+  let matches = currentClientsList.filter(c => norm(clientNames[c.id] || '') === qNorm);
+  if (matches.length === 1) return matches[0].id;
+
+  // 3) nome que começa com o texto digitado
+  matches = currentClientsList.filter(c => norm(clientNames[c.id] || '').startsWith(qNorm));
+  if (matches.length === 1) return matches[0].id;
+
+  // 4) nome que contém o texto digitado
+  matches = currentClientsList.filter(c => norm(clientNames[c.id] || '').includes(qNorm));
+  if (matches.length === 1) return matches[0].id;
+  if (matches.length > 1) return { ambiguous: matches };
+
+  return null;
+}
+
+function comparar() {
+  const rawQuery = document.getElementById('inputCliente').value.trim();
+  if(!rawQuery) return;
+
+  const resolved = resolveClientId(rawQuery);
+  if (resolved && typeof resolved === 'object' && resolved.ambiguous) {
+    const opcoes = resolved.ambiguous.map(c => `${clientNames[c.id]} (${c.id})`).join('<br>');
+    document.getElementById('resultSection').innerHTML = `
+      <div class="result-panel">
+        <div class="empty">
+          <div class="empty-icon">🔎</div>
+          <div class="empty-text">Mais de um cliente encontrado para "<strong>${esc(rawQuery)}</strong>":<br>${opcoes}<br><br>Digite o código ou o nome completo para especificar.</div>
+        </div>
+      </div>`;
+    return;
+  }
+
+  const clientId = resolved || rawQuery;
+  currentClient = clientId;
+
+  document.querySelectorAll('.client-row').forEach(r => r.classList.toggle('active', r.dataset.id === clientId));
+
+  const posicoes = dadosPosicoes.filter(r => r.cliente === clientId);
+  if(!posicoes.length) {
+    document.getElementById('resultSection').innerHTML = `
+      <div class="result-panel">
+        <div class="empty">
+          <div class="empty-icon">😕</div>
+          <div class="empty-text">Nenhuma posição encontrada para o cliente <strong>${esc(clientId)}</strong>.<br>Verifique o código e tente novamente.</div>
+        </div>
+      </div>`;
+    return;
+  }
+
+  const byEmissor = {};
+  posicoes.forEach(p => {
+    const key = p.emissor;
+    if(!byEmissor[key]) byEmissor[key] = { ...p, financeiro: 0, ativos: [] };
+    byEmissor[key].financeiro += p.financeiro;
+    if(!byEmissor[key].ativos.includes(p.ativo)) byEmissor[key].ativos.push(p.ativo);
+  });
+
+  const emissores = Object.values(byEmissor);
+
+  const resultados = emissores.map(pos => {
+    if (norm(pos.emissor).includes('TESOURO NACIONAL') || norm(pos.emissor).includes('TESOURO')) {
+      return { ...pos, tipo:'Tesouro', rating:'AAA', condicao:'Aprovado', matched:true };
+    }
+    const match = findInBase(pos.emissor);
+    if(match) {
+      return { ...pos, tipo:match.tipo, rating:match.rating, condicao:match.condicao, matched:true };
+    }
+    return { ...pos, tipo:'—', rating:'—', condicao:'Sem Cobertura', matched:false };
+  });
+
+  const ord = {'Reprovado':0,'Sem Cobertura':1,'Aprovado':2};
+  resultados.sort((a,b) => (ord[a.condicao]??3)-(ord[b.condicao]??3));
+
+  lastResultados = resultados;
+  renderResultados(resultados, clientId);
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  RENDER RESULTS (accordion)
+// ─────────────────────────────────────────────────────────────────
+function renderResultados(resultados, clientId) {
+  const n      = resultados.length;
+  const nAprov = resultados.filter(r=>r.condicao==='Aprovado').length;
+  const nReprov= resultados.filter(r=>r.condicao==='Reprovado').length;
+  const nSemCob= resultados.filter(r=>r.condicao==='Sem Cobertura').length;
+
+  const fmtBRL = v => 'R$ '+(+v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const fmtDate = d => {
+    if(!d) return '—';
+    if(d instanceof Date) return d.toLocaleDateString('pt-BR');
+    const s = String(d).substring(0,10);
+    if(s.includes('-')) return s.split('-').reverse().join('/');
+    return s;
+  };
+
+  const condClass = c => c==='Aprovado'?'aprovado':c==='Reprovado'?'reprovado':'semcobertura';
+  const tipoClass = t => t==='Bancário'?'bancario':t==='Privado'?'privado':'tesouro';
+
+  const rows = resultados.map((r, idx) => `
+    <div class="asset-row" id="ar-${idx}">
+      <div class="asset-head" onclick="toggleRow(${idx})">
+        <div class="ah-emissor">
+          <div class="em">${esc(r.emissor)}</div>
+          <div class="em-interno">${esc(r.ativos.join(' · '))}</div>
+        </div>
+        <div class="ah-val hide-sm">${fmtBRL(r.financeiro)}</div>
+        <div class="ah-rate hide-sm">${esc(r.taxa) || '—'}</div>
+        <div class="ah-date hide-sm">${fmtDate(r.vencimento)}</div>
+        <div class="hide-sm">${r.tipo !== '—' ? `<span class="badge-tipo ${tipoClass(r.tipo)}">${esc(r.tipo)}</span>` : '<span style="color:var(--tx3);font-size:.72rem;">—</span>'}</div>
+        <div>${r.rating !== '—' ? `<span class="badge-rating">${esc(r.rating)}</span>` : '<span style="color:var(--tx3)">—</span>'}</div>
+        <div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;">
+          <span class="badge ${condClass(r.condicao)}"><span class="bd"></span>${r.condicao}</span>
+          <span class="chev"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+        </div>
+      </div>
+      <div class="asset-detail">
+        <div><div class="det-label">Valor</div><div class="det-val">${fmtBRL(r.financeiro)}</div></div>
+        <div><div class="det-label">Taxa</div><div class="det-val">${esc(r.taxa) || '—'}</div></div>
+        <div><div class="det-label">Vencimento</div><div class="det-val">${fmtDate(r.vencimento)}</div></div>
+        <div><div class="det-label">Ativos</div><div class="det-val norm">${esc(r.ativos.join(', '))}</div></div>
+        <div><div class="det-label">Tipo</div><div class="det-val norm">${esc(r.tipo)}</div></div>
+        <div><div class="det-label">Rating</div><div class="det-val norm">${esc(r.rating)}</div></div>
+      </div>
+    </div>`).join('');
+
+  const nomeLabel = clientNames[clientId] ? ` · ${clientNames[clientId]}` : '';
+  document.getElementById('resultSection').innerHTML = `
+    <div class="result-panel">
+      <div class="rp-header">
+        <div>
+          <div class="rp-title">Comparação de Ativos</div>
+          <div class="rp-client">Cliente: ${esc(clientId)}${esc(nomeLabel)} · ${n} emissor${n!==1?'es':''}</div>
+        </div>
+      </div>
+      <div class="summary">
+        <div class="sp total"><div class="sp-d"></div>${n} emissores</div>
+        <div class="sp aprov"><div class="sp-d"></div>${nAprov} Aprovado${nAprov!==1?'s':''}</div>
+        <div class="sp reprov"><div class="sp-d"></div>${nReprov} Reprovado${nReprov!==1?'s':''}</div>
+        <div class="sp semcob"><div class="sp-d"></div>${nSemCob} Sem Cobertura</div>
+      </div>
+      <div class="asset-list">${rows}</div>
+    </div>`;
+}
+
+function toggleRow(idx) {
+  const el = document.getElementById(`ar-${idx}`);
+  if (el) el.classList.toggle('open');
+}
+
+function esc(s){ return String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+// Allow pressing Enter in the search input
+document.getElementById('inputCliente').addEventListener('keydown', e => {
+  if(e.key==='Enter' && !document.getElementById('btnComparar').disabled) comparar();
+});
+</script>
+</body>
+</html>
