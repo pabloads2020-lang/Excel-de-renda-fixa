@@ -293,6 +293,29 @@ body{background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--tx);min-h
 }
 
 .footer{text-align:center;font-size:.68rem;color:var(--tx3);padding:1.75rem;margin-top:1rem;border-top:1px solid var(--bd);}
+/* ── MODAIS (senha / upload de base admin) ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(2px);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px;}
+.modal-overlay.hidden{display:none;}
+.modal-box{background:var(--bg-card);border:1px solid var(--bd);border-radius:16px;padding:1.75rem;max-width:400px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.4);}
+.modal-title{font-size:1rem;font-weight:700;color:var(--tx);margin-bottom:.35rem;}
+.modal-sub{font-size:.8rem;color:var(--tx3);margin-bottom:1.1rem;line-height:1.5;}
+.modal-err{display:none;background:rgba(192,57,43,.1);border:1px solid rgba(192,57,43,.3);color:#E74C3C;font-size:.76rem;padding:8px 12px;border-radius:8px;margin-bottom:.85rem;}
+.modal-input-wrap{position:relative;margin-bottom:1.1rem;}
+.modal-input{width:100%;background:var(--bg-card3);border:1px solid var(--bd);border-radius:10px;padding:11px 40px 11px 14px;color:var(--tx);font-family:'DM Mono',monospace;font-size:.9rem;outline:none;transition:border-color .2s;}
+.modal-input:focus{border-color:var(--gold);}
+.modal-eye{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:transparent;border:none;color:var(--tx3);cursor:pointer;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:6px;}
+.modal-eye:hover{color:var(--gold);}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;}
+.modal-btn{border-radius:10px;padding:9px 18px;font-family:'DM Sans',sans-serif;font-weight:600;font-size:.82rem;cursor:pointer;border:1px solid var(--bd);transition:all .15s;}
+.modal-btn.cancel{background:transparent;color:var(--tx3);}
+.modal-btn.cancel:hover{border-color:var(--tx3);color:var(--tx);}
+.modal-btn.confirm{background:var(--gold);color:#000;border-color:var(--gold);}
+.modal-btn.confirm:hover{background:var(--gold2);}
+.modal-btn.confirm:disabled{opacity:.4;cursor:not-allowed;}
+.modal-dropzone{border:1.5px dashed var(--bd);border-radius:12px;padding:1.5rem 1rem;text-align:center;cursor:pointer;transition:all .15s;margin-bottom:1rem;position:relative;font-size:.82rem;color:var(--tx3);}
+.modal-dropzone:hover,.modal-dropzone.drag{border-color:var(--gold);background:rgba(197,160,89,.06);color:var(--tx);}
+.modal-dropzone.ok{border-color:rgba(39,174,96,.5);background:rgba(39,174,96,.08);color:#2ECC71;}
+.modal-dropzone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
 </style>
 </head>
 <body>
@@ -353,15 +376,50 @@ body{background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--tx);min-h
     <div class="upload-card" id="cardBase">
       <span class="uc-label">Base de Referência:</span>
       <div id="statusBase" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-        <span class="st idle">Aguardando arquivo…</span>
+        <span class="st idle">Aguardando base salva…</span>
       </div>
-      <div class="drop-zone" id="dzBase" title='Excel do comitê · abas "Crédito Bancário" e "Crédito Privado" · Colunas: Base XP · Base Interna · Rating · Condição'>
-        <input type="file" id="fileBase" accept=".xlsx,.xls">
-        <span class="dz-label"><strong>Carregar Excel</strong></span>
+      <div class="drop-zone" id="dzBase" title="Restrito · requer senha para atualizar a base salva">
+        <span class="dz-label"><strong>🔒 Atualizar base</strong></span>
       </div>
     </div>
 
   </div><!-- /upload-grid -->
+
+  <!-- Modal: senha admin -->
+  <div class="modal-overlay hidden" id="modalSenha">
+      <div class="modal-box" role="dialog" aria-modal="true">
+          <div class="modal-title">🔒 Atualizar Base de Referência</div>
+          <div class="modal-sub">Esta área é restrita. Insira a senha para continuar.</div>
+          <div class="modal-err" id="modalSenhaErr">Senha incorreta. Tente novamente.</div>
+          <div class="modal-input-wrap">
+              <input type="password" class="modal-input" id="modalSenhaInput" placeholder="Senha" autocomplete="off">
+              <button type="button" class="modal-eye" id="btnToggleSenha" tabindex="-1" aria-label="Mostrar senha">
+                  <span class="material-symbols-outlined" id="eyeIcon" style="font-size:18px;">visibility</span>
+              </button>
+          </div>
+          <div class="modal-actions">
+              <button type="button" class="modal-btn cancel" id="modalSenhaCancelar">Cancelar</button>
+              <button type="button" class="modal-btn confirm" id="modalSenhaConfirmar">Confirmar</button>
+          </div>
+      </div>
+  </div>
+
+  <!-- Modal: upload de nova base (após senha correta) -->
+  <div class="modal-overlay hidden" id="modalUploadBase">
+      <div class="modal-box" role="dialog" aria-modal="true">
+          <div class="modal-title">📋 Nova Base de Referência</div>
+          <div class="modal-sub">Selecione o Excel do comitê com as abas <strong>Crédito Bancário</strong> e <strong>Crédito Privado</strong>.</div>
+          <div class="modal-dropzone" id="dzBaseModal">
+              <input type="file" id="fileBaseModal" accept=".xlsx,.xls">
+              <span id="dzBaseModalLabel">Clique ou arraste o Excel aqui</span>
+          </div>
+          <div id="stBaseModal" style="margin-bottom:1rem;"></div>
+          <div class="modal-actions">
+              <button type="button" class="modal-btn cancel" id="modalBaseFechar">Fechar</button>
+              <button type="button" class="modal-btn confirm" id="modalBaseSalvar" disabled>💾 Salvar e gerar HTML</button>
+          </div>
+      </div>
+  </div>
 
   <!-- BUSCA RÁPIDA POR CÓDIGO -->
   <div class="search-bar">
@@ -492,6 +550,13 @@ let currentSort   = 'id';
 let currentFilter = '';
 let selectedAssetTypes = [];
 let lastResultados = [];
+let pendingBaseData = [];
+
+// ─────────────────────────────────────────────────────────────────
+//  ADMIN: base de referência salva no HTML
+// ─────────────────────────────────────────────────────────────────
+const SENHA_HASH = 'ac9689e2272427085e35b9d3e3e8bed88cb3434828b43b86fc0596cad4c6e270';
+const BASE_REFERENCIA_JSON = "[{\"baseXP\":\"BANCO BV S/A\",\"baseInterna\":\"VOTORANTIM\",\"rating\":\"A\",\"condicao\":\"Aprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"PICPAY BANK - BANCO MULTIPLO S.A\",\"baseInterna\":\"PICPAY\",\"rating\":\"A-\",\"condicao\":\"Aprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"CAIXA ECONOMICA\",\"baseInterna\":\"CAIXA ECONÔMICA FEDERAL\",\"rating\":\"AA\",\"condicao\":\"Aprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"ASSOCIACAO DE POUPANCA E EMPRESTIMO POUPEX\",\"baseInterna\":\"APE POUPEX\",\"rating\":\"BBB+\",\"condicao\":\"Aprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BRB BANCO DE BRASILIA SA\",\"baseInterna\":\"BRB\",\"rating\":\"CCC\",\"condicao\":\"Reprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO XP S.A.\",\"baseInterna\":\"XP\",\"rating\":\"A-\",\"condicao\":\"Aprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO PLENO SA\",\"baseInterna\":\"BANCO PLENO\",\"rating\":\"CCC\",\"condicao\":\"Reprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO AGIBANK S.A\",\"baseInterna\":\"AGIBANK\",\"rating\":\"A-\",\"condicao\":\"Aprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO CSF S/A\",\"baseInterna\":\"BCO CSF S.A.\",\"rating\":\"BB\",\"condicao\":\"Reprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO COOPERATIVO SICOOB S.A.\",\"baseInterna\":\"BANCO SICOOB\",\"rating\":\"AA\",\"condicao\":\"Aprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"FACTA FINANCEIRA S.A. CREDITO, FINANCIAMENTO E INV\",\"baseInterna\":\"FACTA S.A. CFI\",\"rating\":\"A+\",\"condicao\":\"Aprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO ORIGINAL S/A\",\"baseInterna\":\"ORIGINAL\",\"rating\":\"AA\",\"condicao\":\"Aprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO PINE S/A\",\"baseInterna\":\"PINE\",\"rating\":\"A+\",\"condicao\":\"Aprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"CORA SOCIEDADE DE CREDITO FINANCIAMENTO E INVESTIM\",\"baseInterna\":\"CORA SCFI\",\"rating\":\"BB\",\"condicao\":\"Reprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"COBUCCIO S/A SOCIEDADE DE CREDITO FINANCIAMENTO E\",\"baseInterna\":\"COBUCCIO SCFI\",\"rating\":\"CCC\",\"condicao\":\"Reprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BR PARTNERS BANCO DE INVESTIMENTO S.A.\",\"baseInterna\":\"BR PARTNERS\",\"rating\":\"BBB\",\"condicao\":\"Reprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BNDES\",\"baseInterna\":\"BNDES\",\"rating\":\"AA\",\"condicao\":\"Aprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO BS2 S.A.\",\"baseInterna\":\"BS2\",\"rating\":\"BBB+\",\"condicao\":\"Reprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"NOVO BANCO CONTINENTAL S.A. BANCO MULTIPLO\",\"baseInterna\":\"NOVO BCO CONTINENTAL S.A. - BM\",\"rating\":\"BB\",\"condicao\":\"Reprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO BTG PACTUAL\",\"baseInterna\":\"BTG PACTUAL\",\"rating\":\"AAA\",\"condicao\":\"Aprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO INTER S/A\",\"baseInterna\":\"INTER\",\"rating\":\"A-\",\"condicao\":\"Aprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO ANDBANK (BRASIL) S/A\",\"baseInterna\":\"ANDBANK\",\"rating\":\"BB\",\"condicao\":\"Reprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO AFINZ SA - BANCO MULTIPLO\",\"baseInterna\":\"BANCO AFINZ BM\",\"rating\":\"CCC\",\"condicao\":\"Reprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"OURIBANK SA\",\"baseInterna\":\"OURIBANK\",\"rating\":\"AA-\",\"condicao\":\"Aprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"PARANA BANCO S/A\",\"baseInterna\":\"PARANÁ BANCO\",\"rating\":\"A-\",\"condicao\":\"Aprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO DA AMAZONIA S/A\",\"baseInterna\":\"BCO DA AMAZONIA S.A.\",\"rating\":\"BB\",\"condicao\":\"Reprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO BMG S.A\",\"baseInterna\":\"BMG\",\"rating\":\"A-\",\"condicao\":\"Aprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO BBC - GRUPO SIMPAR\",\"baseInterna\":\"BBC S.A.\",\"rating\":\"B\",\"condicao\":\"Reprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO DAYCOVAL S/A\",\"baseInterna\":\"BCO DAYCOVAL S.A\",\"rating\":\"A+\",\"condicao\":\"Aprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO RENDIMENTO S/A\",\"baseInterna\":\"RENDIMENTO\",\"rating\":\"A+\",\"condicao\":\"Aprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"TENTOS SA CFI\",\"baseInterna\":\"TENTOS CFI\",\"rating\":\"B\",\"condicao\":\"Reprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO BOCOM BBM SA\",\"baseInterna\":\"BOCOM\",\"rating\":\"AA+\",\"condicao\":\"Aprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO DE DESENVOLVIMENTO DE MINAS GERAIS S.A.\",\"baseInterna\":\"BCO DES. DE MG S.A.\",\"rating\":\"A+\",\"condicao\":\"Aprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO RABOBANK INT BR\",\"baseInterna\":\"BCO RABOBANK INTL BRASIL S.A.\",\"rating\":\"BBB+\",\"condicao\":\"Reprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO FIBRA SA\",\"baseInterna\":\"BCO FIBRA S.A.\",\"rating\":\"A+\",\"condicao\":\"Aprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"SIMPALA S.A. CREDITO, FINANCIAMENTO E INVESTIMENTO\",\"baseInterna\":\"SIMPALA CFI\",\"rating\":\"BBB\",\"condicao\":\"Reprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO DIGIMAIS S.A.\",\"baseInterna\":\"BANCO DIGIMAIS\",\"rating\":\"B\",\"condicao\":\"Reprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO RIBEIRAO PRETO SA\",\"baseInterna\":\"BANCO RIBEIRÃO PRETO\",\"rating\":\"BB\",\"condicao\":\"Reprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO FATOR S/A\",\"baseInterna\":\"FATOR\",\"rating\":\"AA\",\"condicao\":\"Aprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO SANTANDER SA\",\"baseInterna\":\"SANTANDER\",\"rating\":\"AA\",\"condicao\":\"Aprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO ITAU\",\"baseInterna\":\"ITAU\",\"rating\":\"AA+\",\"condicao\":\"Aprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"DM FINANCEIRA S.A. CFI\",\"baseInterna\":\"DM SCFI\",\"rating\":\"BB\",\"condicao\":\"Reprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO PAULISTA\",\"baseInterna\":\"BANCO PAULISTA\",\"rating\":\"CCC\",\"condicao\":\"Reprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO CNH CAPITAL S/A\",\"baseInterna\":\"BANCO CNH INDUSTRIAL CAPITAL S.A\",\"rating\":\"BB\",\"condicao\":\"Reprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO LUSO BRASILEIRO S.A\",\"baseInterna\":\"BCO LUSO BRASILEIRO S.A.\",\"rating\":\"BBB\",\"condicao\":\"Reprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO MASTER S/A\",\"baseInterna\":\"BANCO MASTER\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO C6 S.A.\",\"baseInterna\":\"BANCO C6\",\"rating\":\"A\",\"condicao\":\"Aprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"PLANTAE SA CREDITO FINANCIAMENTO E INVEST\",\"baseInterna\":\"PLANTAE CFI\",\"rating\":\"B\",\"condicao\":\"Reprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"PAGBANK\",\"baseInterna\":\"PAGSEGURO\",\"rating\":\"AA-\",\"condicao\":\"Aprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO STELLANTIS\",\"baseInterna\":\"STELLANTIS\",\"rating\":\"A-\",\"condicao\":\"Aprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO SICREDI S.A.\",\"baseInterna\":\"BCO COOPERATIVO SICREDI\",\"rating\":\"AA\",\"condicao\":\"Aprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO DE LAGE LANDEN BRASIL S.A.\",\"baseInterna\":\"BCO DE LAGE LANDEN BRASIL S.A.\",\"rating\":\"BB\",\"condicao\":\"Reprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO ABC BRASIL S.A.\",\"baseInterna\":\"ABC-BRASIL\",\"rating\":\"AA\",\"condicao\":\"Aprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO BARI DE INVESTIMENTOS E FINANCIAMENTOS S.A.\",\"baseInterna\":\"BANCO BARI DE INVESTIMENTO E FINANCI.\",\"rating\":\"A\",\"condicao\":\"Aprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"OMNI BANCO S/A\",\"baseInterna\":\"OMNI\",\"rating\":\"BB\",\"condicao\":\"Reprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO TOPAZIO S.A.\",\"baseInterna\":\"BANCO TOPÁZIO S.A.\",\"rating\":\"A\",\"condicao\":\"Aprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"OMNI S/A CREDITO FINANCIAMENTO E INVESTIMENTO\",\"baseInterna\":\"OMNI\",\"rating\":\"BB\",\"condicao\":\"Reprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"CARUANA S/A SOCIEDADE DE CREDITO FINANCIAMENTO\",\"baseInterna\":\"CARUANA SCFI\",\"rating\":\"B\",\"condicao\":\"Reprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO RODOBENS S/A\",\"baseInterna\":\"RODOBENS\",\"rating\":\"A+\",\"condicao\":\"Aprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"LEBES FINANCEIRA S.A.\",\"baseInterna\":\"LEBES FINANCEIRA SCFI\",\"rating\":\"CCC\",\"condicao\":\"Reprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO DO ESTADO DO PARA S/A\",\"baseInterna\":\"BCO DO EST. DO PA S.A.\",\"rating\":\"BBB+\",\"condicao\":\"Reprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO BRADESCO S/A\",\"baseInterna\":\"BRADESCO\",\"rating\":\"AA\",\"condicao\":\"Aprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO TRIANGULO S/A\",\"baseInterna\":\"BCO TRIANGULO S.A.\",\"rating\":\"B\",\"condicao\":\"Reprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO MERCANTIL DO BRASIL S.A\",\"baseInterna\":\"MERCANTIL DO BRASIL\",\"rating\":\"AA\",\"condicao\":\"Aprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"STONE SOCIEDADE DE CREDITO FINANCIAMENTO E INVESTI\",\"baseInterna\":\"STONE IP\",\"rating\":\"AA+\",\"condicao\":\"Aprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"HAITONG\",\"baseInterna\":\"HAITONG\",\"rating\":\"BBB+\",\"condicao\":\"Reprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"SINOSSERRA FINANCEIRA S/A - SOCIEDADE DE CREDITO\",\"baseInterna\":\"SINOSSERRA FINANCEIRA S/A\",\"rating\":\"BBB\",\"condicao\":\"Reprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"VIA CERTA FINANCIADORA S/A - CREDITO, FINANCIAMENT\",\"baseInterna\":\"VIA CERTA CFI\",\"rating\":\"BB\",\"condicao\":\"Reprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"HS FINANCEIRA S/A CFI\",\"baseInterna\":\"HS FINANCEIRA\",\"rating\":\"BB\",\"condicao\":\"Reprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO SEMEAR S/A\",\"baseInterna\":\"BANCO SEMEAR\",\"rating\":\"BB\",\"condicao\":\"Reprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO TOYOTA DO BRASIL S/A\",\"baseInterna\":\"BCO TOYOTA DO BRASIL S.A.\",\"rating\":\"BBB+\",\"condicao\":\"Reprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"MERCADO LIVRE CFI\",\"baseInterna\":\"MERCADO PAGO IP\",\"rating\":\"BB\",\"condicao\":\"Reprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"NEON FINANCEIRA CREDITO FINANCIAMENTO E INVESTIMEN\",\"baseInterna\":\"NEON PAGAMENTOS IP\",\"rating\":\"B\",\"condicao\":\"Reprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"WILL FINANCEIRA S.A. CFI\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO PAN S/A\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO JOHN DEERE S.A.\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO VOLKSWAGEN S A\",\"baseInterna\":\"\",\"rating\":\"BB\",\"condicao\":\"Reprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO C6 CONSIGNADO S.A.\",\"baseInterna\":\"BANCO C6\",\"rating\":\"A\",\"condicao\":\"Aprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"CHINA CONSTRUCTION BANK (BRASIL) BANCO MULTIPLO SA\",\"baseInterna\":\"BANK OF CHINA (BRASIL)\",\"rating\":\"A+\",\"condicao\":\"Aprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"AGROLEND SOCIEDADE DE CREDITO FINANCIAMENTO E INVE\",\"baseInterna\":\"AGROLEND SCFI\",\"rating\":\"A-\",\"condicao\":\"Aprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"ESTRELA MINEIRA CREDITO FINANCIAMENTO S.A\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO PSA FINANCE BRASIL S/A\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO MASTER DE INVESTIMENTO S.A.\",\"baseInterna\":\"BANCO MASTER\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO MERCANTIL DE INVESTIMENTOS S/A\",\"baseInterna\":\"MERCANTIL DO BRASIL\",\"rating\":\"AA\",\"condicao\":\"Aprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"SENFF S.A - CREDITO, FINANCIAMENTO E INVESTIMENTO\",\"baseInterna\":\"SENFFNET IP\",\"rating\":\"BBB\",\"condicao\":\"Reprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO REGIONAL DE DESENVOLVIMENTO DO EXTREMO SUL\",\"baseInterna\":\"BD REGIONAL DO EXTREMO SUL\",\"rating\":\"A-\",\"condicao\":\"Aprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"PERNAMBUCANAS FINANCIADORA S/A CFI\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Bancário\"},{\"baseXP\":\"STELLANTIS FINANCIAMENTOS SOCIEDADE DE CREDITO FIN\",\"baseInterna\":\"STELLANTIS\",\"rating\":\"A-\",\"condicao\":\"Aprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"OXY COMPANHIA HIPOTECARIA S.A\",\"baseInterna\":\"OXY CH\",\"rating\":\"A-\",\"condicao\":\"Aprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"MIDWAY - RIACHUELO S.A.\",\"baseInterna\":\"MIDWAY S.A. - SCFI\",\"rating\":\"BB\",\"condicao\":\"Reprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"RP FINANCEIRA S.A - SCFI\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Bancário\"},{\"baseXP\":\"PORTOSEG S/A CREDITO FINANCIAMENTO E INVESTIMENTO\",\"baseInterna\":\"PORTO SEGURO\",\"rating\":\"B\",\"condicao\":\"Reprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"NU FINANCEIRA S.A SOCIEDADE DE CREDITO, FINANCIAME\",\"baseInterna\":\"NU PAGAMENTOS\",\"rating\":\"A-\",\"condicao\":\"Aprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"CREDITA S/A CREDITO FINANCIAMENTO E INVESTIMENTO\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BARI COMPANHIA HIPOTECARIA\",\"baseInterna\":\"BANCO BARI DE INVESTIMENTO E FINANCI.\",\"rating\":\"A\",\"condicao\":\"Aprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"MERCANTIL - JUROS MENSAIS\",\"baseInterna\":\"MERCANTIL DO BRASIL\",\"rating\":\"AA\",\"condicao\":\"Aprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO RCI BRASIL S.A.\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Bancário\"},{\"baseXP\":\"QISTA S.A. - CREDITO, FINANCIAMENTO E INVESTIMENTO\",\"baseInterna\":\"QISTA S.A. CFI\",\"rating\":\"BB\",\"condicao\":\"Reprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO OURINVEST S/A\",\"baseInterna\":\"OURIBANK\",\"rating\":\"AA-\",\"condicao\":\"Aprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO VOLKSWAGEN S A\",\"baseInterna\":\"VOLKSWAGEN\",\"rating\":\"BB\",\"condicao\":\"Reprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO TOYOTA DO BRASIL\",\"baseInterna\":\"BCO TOYOTA DO BRASIL S.A.\",\"rating\":\"BBB+\",\"condicao\":\"Reprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"MAGALUPAY SOCIEDADE CFI S.A.\",\"baseInterna\":\"MAGALUPAY IP\",\"rating\":\"B\",\"condicao\":\"Reprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"SANTINVEST S/A CFI\",\"baseInterna\":\"SANTINVEST\",\"rating\":\"BB\",\"condicao\":\"Reprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BIORC FINANCEIRA CREDITO FINANCIAMENTO E INVESTIME\",\"baseInterna\":\"NEON PAGAMENTOS IP\",\"rating\":\"B\",\"condicao\":\"Reprovado\",\"tipo\":\"Bancário\"},{\"baseXP\":\"BANCO VOITER S.A.\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Bancário\"},{\"baseXP\":\"KLABIN S.A.\",\"baseInterna\":\"Klabin S.A.\",\"rating\":\"A+\",\"condicao\":\"Aprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"RAÍZEN ENERGIA S.A.\",\"baseInterna\":\"Raízen S.A.\",\"rating\":\"B\",\"condicao\":\"Reprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"PETROLEO BRASILEIRO S/A - PETROBRAS\",\"baseInterna\":\"Petróleo Brasileiro S.A. - Petrobras\",\"rating\":\"AA-\",\"condicao\":\"Aprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"PETRÓLEO BRASILEIRO S.A. - PETROBRAS\",\"baseInterna\":\"Petróleo Brasileiro S.A. - Petrobras\",\"rating\":\"AA-\",\"condicao\":\"Aprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"RUMO S.A.\",\"baseInterna\":\"Rumo S.A.\",\"rating\":\"A\",\"condicao\":\"Aprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"SIMPAR S.A.\",\"baseInterna\":\"Simpar S.A.\",\"rating\":\"BBB-\",\"condicao\":\"Reprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"BRASKEM S.A.\",\"baseInterna\":\"Braskem S.A.\",\"rating\":\"BB\",\"condicao\":\"Reprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"BRASKEM\",\"baseInterna\":\"Braskem S.A.\",\"rating\":\"BB\",\"condicao\":\"Reprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"JALLES MACHADO S.A.\",\"baseInterna\":\"Jalles Machado S.A.\",\"rating\":\"BB+\",\"condicao\":\"Reprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"NEOENERGIA SA\",\"baseInterna\":\"Neoenergia S.A\",\"rating\":\"A+\",\"condicao\":\"Aprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"ENGIE BRASIL ENERGIA S.A\",\"baseInterna\":\"Engie Brasil Energia S.A.\",\"rating\":\"AA-\",\"condicao\":\"Aprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"SÃO MARTINHO S.A.\",\"baseInterna\":\"São Martinho Sa\",\"rating\":\"BBB+\",\"condicao\":\"Reprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"SAO MARTINHO S/A\",\"baseInterna\":\"São Martinho Sa\",\"rating\":\"BBB+\",\"condicao\":\"Reprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"MRV ENGENHARIA E PARTICIPAÇÕES S.A.\",\"baseInterna\":\"Mrv Engenharia E Participações S/A\",\"rating\":\"BB+\",\"condicao\":\"Reprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"BRASILAGRO - COMPANHIA BRASILEIRA DE PROPRIEDADES AGRÍCOLAS\",\"baseInterna\":\"Brasilagro Cia Bras De Prop Agricolas\",\"rating\":\"BBB\",\"condicao\":\"Reprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"COMPANHIA BRASILEIRA DE DISTRIBUICAO\",\"baseInterna\":\"Companhia Brasileira De Distribuição\",\"rating\":\"BB\",\"condicao\":\"Reprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"COMPANHIA BRASILEIRA DE DISTRIBUIÇÃO\",\"baseInterna\":\"Companhia Brasileira De Distribuição\",\"rating\":\"BB\",\"condicao\":\"Reprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"EVEN CONSTRUTORA E INCORPORADORA S.A.\",\"baseInterna\":\"Even Construtora E Incorporadora S/A\",\"rating\":\"A-\",\"condicao\":\"Aprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"LOCALIZA RENT A CAR SA\",\"baseInterna\":\"Localiza Rent A Car Sa\",\"rating\":\"BBB-\",\"condicao\":\"Reprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"LOCALIZA RENT A CAR S.A.\",\"baseInterna\":\"Localiza Rent A Car Sa\",\"rating\":\"BBB-\",\"condicao\":\"Reprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"VALE S.A.\",\"baseInterna\":\"Vale S.A.\",\"rating\":\"A+\",\"condicao\":\"Aprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"JSL S.A.\",\"baseInterna\":\"Jsl S.A.\",\"rating\":\"BB+\",\"condicao\":\"Reprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"MATEUS SUPERMERCADOS S.A.\",\"baseInterna\":\"Grupo Mateus S.A.\",\"rating\":\"A+\",\"condicao\":\"Aprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"MINERVA S.A.\",\"baseInterna\":\"Minerva S/A\",\"rating\":\"BB\",\"condicao\":\"Reprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"MARFRIG GLOBAL FOODS S.A.\",\"baseInterna\":\"Marfrig Global Foods Sa\",\"rating\":\"BBB-\",\"condicao\":\"Reprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"MARFRIG GLOBAL FOODS SA\",\"baseInterna\":\"Marfrig Global Foods Sa\",\"rating\":\"BBB-\",\"condicao\":\"Reprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"M DIAS BRANCO S.A. - INDÚSTRIA E COMÉRCIO DE ALIMENTOS\",\"baseInterna\":\"M.Dias Branco S.A. Ind Com De Alimentos\",\"rating\":\"A\",\"condicao\":\"Aprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"ONCOCLÍNICAS DO BRASIL SERVIÇOS MÉDICOS S.A.\",\"baseInterna\":\"Oncoclínicas Do Brasil Serviços Médicos S.A.\",\"rating\":\"B-\",\"condicao\":\"Reprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"TIM S.A.\",\"baseInterna\":\"Tim Brasil Serviços E Participações S.A.\",\"rating\":\"AA-\",\"condicao\":\"Aprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"IRANI PAPEL E EMBALAGEM S.A.\",\"baseInterna\":\"Irani Papel E Embalagem S.A.\",\"rating\":\"AA-\",\"condicao\":\"Aprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"TRISUL S.A.\",\"baseInterna\":\"Trisul S/A\",\"rating\":\"A\",\"condicao\":\"Aprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"CONSTRUTORA TENDA S.A.\",\"baseInterna\":\"Construtora Tenda S/A\",\"rating\":\"BBB+\",\"condicao\":\"Reprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"CURY CONSTRUTORA E INCORPORADORA S.A.\",\"baseInterna\":\"Cury Construtora E Incorporadora S.A.\",\"rating\":\"AA-\",\"condicao\":\"Aprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"DIRECIONAL ENGENHARIA S.A.\",\"baseInterna\":\"Direcional Engenharia Sa\",\"rating\":\"A+\",\"condicao\":\"Aprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"NATURA COSMÉTICOS S.A.\",\"baseInterna\":\"Natura Cosmeticos Sa\",\"rating\":\"BB+\",\"condicao\":\"Reprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"ENEVA S.A\",\"baseInterna\":\"Eneva S.A.\",\"rating\":\"A\",\"condicao\":\"Aprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"CENTRAIS ELETRICAS BRAS.S/A - ELETROBRAS\",\"baseInterna\":\"Centrais Eletricas Brasileiras Sa\",\"rating\":\"A\",\"condicao\":\"Aprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"CAMIL ALIMENTOS S.A.\",\"baseInterna\":\"Camil Alimentos S/A\",\"rating\":\"A-\",\"condicao\":\"Aprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"MOVIDA PARTICIPACOES S.A.\",\"baseInterna\":\"Movida Participações S.A.\",\"rating\":\"BBB-\",\"condicao\":\"Reprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"MOVIDA PARTICIPACOES S/A\",\"baseInterna\":\"Movida Participações S.A.\",\"rating\":\"BBB-\",\"condicao\":\"Reprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"DEXCO S.A.\",\"baseInterna\":\"Dexco S.A.\",\"rating\":\"A\",\"condicao\":\"Aprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"ANIMA HOLDING S.A.\",\"baseInterna\":\"Anima Holding S/A\",\"rating\":\"BBB-\",\"condicao\":\"Reprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"BOA SAFRA SEMENTES S.A.\",\"baseInterna\":\"Boa Safra Sementes S.A\",\"rating\":\"BBB+\",\"condicao\":\"Reprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"CYRELA BRAZIL REALTY S.A. - EMPREENDIMENTOS E PARTICIPAÇÕES\",\"baseInterna\":\"Cyrela Brazil Realty S.A.Empreend E Part\",\"rating\":\"BBB-\",\"condicao\":\"Reprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"HIDROVIAS DO BRASIL S.A.\",\"baseInterna\":\"Hidrovias Do Brasil S.A.\",\"rating\":\"BBB\",\"condicao\":\"Reprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"DIAGNÓSTICOS DA AMÉRICA S.A.\",\"baseInterna\":\"Diagnosticos Da America Sa\",\"rating\":\"BB+\",\"condicao\":\"Reprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"DIAGNOSTICOS DA AMERICA S/A\",\"baseInterna\":\"Diagnosticos Da America Sa\",\"rating\":\"BB+\",\"condicao\":\"Reprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"EQUATORIAL ENERGIA S.A\",\"baseInterna\":\"Equatorial S.A.\",\"rating\":\"A+\",\"condicao\":\"Aprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"ENERGISA S/A\",\"baseInterna\":\"Energisa Sa\",\"rating\":\"A+\",\"condicao\":\"Aprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"CTEEP TRAN. PAULISTA\",\"baseInterna\":\"Isa Energia Brasil S.A.\",\"rating\":\"A+\",\"condicao\":\"Aprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"CEMIG DISTRIBUIÇÃO S/A\",\"baseInterna\":\"Cia Energ Minas Gerais - Cemig\",\"rating\":\"AA-\",\"condicao\":\"Aprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"COPEL DISTRIBUICAO S/A\",\"baseInterna\":\"Companhia Paranaense De Energia Copel\",\"rating\":\"AA-\",\"condicao\":\"Aprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"SUZANO S.A.\",\"baseInterna\":\"Suzano S.A.\",\"rating\":\"AA-\",\"condicao\":\"Aprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"FERREIRA GOMES ENERGIA SA\",\"baseInterna\":\"Engie Brasil Energia S.A.\",\"rating\":\"AA-\",\"condicao\":\"Aprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"COMPLEXO MORRINHOS ENERGIAS RENOVAVEIS SA\",\"baseInterna\":\"Engie Brasil Energia S.A.\",\"rating\":\"AA-\",\"condicao\":\"Aprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"EQUATORIAL TRANSMISSORA 7 SPE S.A.\",\"baseInterna\":\"Equatorial S.A.\",\"rating\":\"A+\",\"condicao\":\"Aprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"ADECOAGRO VALE DO IVINHEMA S.A.\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"VAMOS LOCAÇÃO DE CAMINHÕES, MÁQUINAS E EQUIPAMENTOS S.A.\",\"baseInterna\":\"Simpar S.A.\",\"rating\":\"BBB-\",\"condicao\":\"Reprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"ITAPOA TERMINAIS PORTUARIOS S.A.\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"AES TIETE S.A\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"AEGEA SANEAMENTO E PARTICIPACOES S/A\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"BRF S.A.\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"IPIRANGA PRODUTOS DE PETRÓLEO S.A.\",\"baseInterna\":\"Ultrapar Participações Sa\",\"rating\":\"A+\",\"condicao\":\"Aprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"LIGHT SERVICOS DE ELETRICIDADE S/A\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"SABESP\",\"baseInterna\":\"Cia Saneamento Básico Estado São Paulo\",\"rating\":\"AA+\",\"condicao\":\"Aprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"COMGAS\",\"baseInterna\":\"Cosan S.A.\",\"rating\":\"BB+\",\"condicao\":\"Reprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"RZK SOLAR 01 S.A.\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"CSN CIMENTOS S.A.\",\"baseInterna\":\"Cia Siderurgica Nacional\",\"rating\":\"BBB-\",\"condicao\":\"Reprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"CARAMURU ALIMENTOS S.A.\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"SMARTFIT ESCOLA DE GINÁSTICA E DANÇA S.A.\",\"baseInterna\":\"Smartfit Escola De Ginástica E Dança S.A.\",\"rating\":\"A\",\"condicao\":\"Aprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"AUTOPISTA LITORAL SUL S/A.\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"LOG COMMERCIAL PROPERTIES E PARTICIPAÇÕES S.A.\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"VERO S.A.\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"TRUE SECURITIZADORA S.A.\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"KANASTRA SECURITIZADORA S.A.\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"VIRGO COMPANHIA DE SECURITIZACAO\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"VERT COMPANHIA SECURITIZADORA\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"OPEA SECURITIZADORA S.A.\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"VORTX DISTRIBUIDORA DE TITULOS E VALORES MOBILIARI\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"SEMPRE AGTECH LTDA\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"FS AGRISOLUTIONS INDÚSTRIA DE BIOCOMBUSTÍVEIS LTDA\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"BELENUS LTDA\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"SÃO SALVADOR ALIMENTOS S.A.\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"OLFAR S.A. - ALIMENTO E ENERGIA\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"PLANAGRI S.A.\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"GRUPO FARTURA DE HORTIFRUT S.A.\",\"baseInterna\":\"Grupo Fartura De Hortifrut S.A.\",\"rating\":\"BB+\",\"condicao\":\"Reprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"NEOMILLE S.A.\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"ENEVA PARTICIPACOES\",\"baseInterna\":\"Eneva S.A.\",\"rating\":\"A\",\"condicao\":\"Aprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"UHE SAO SIMAO ENERGIA S/A\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"PLUMA AGRO AVÍCOLA LTDA\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"LATICÍNIOS TIROLEZ LTDA.\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"PRIME AGRO PRODUTOS AGRÍCOLAS LTDA\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"SAGA MALLS S.A.\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"TENDA ATACADO S.A.\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"AGUAS DO RIO 1 SPE S.A\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"AGUAS DO RIO 4 SPE S.A\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"ACP BIOENERGIA LTDA\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"BCBF PARTICIPAÇÕES S.A.\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"GJA INDÚSTRIAS S.A.\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"AGROINSUMOS COMERCIAL AGRÍCOLA LTDA\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"TESOURO NACIONAL\",\"baseInterna\":\"\",\"rating\":\"AAA\",\"condicao\":\"Aprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"ENERGISA TRANSMISSAO DE ENERGIA S.A.\",\"baseInterna\":\"Energisa Sa\",\"rating\":\"A+\",\"condicao\":\"Aprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"COMPANHIA DE LOCACAO DAS AMERICAS\",\"baseInterna\":\"Localiza Rent A Car Sa\",\"rating\":\"BBB-\",\"condicao\":\"Reprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"COMPANHIA DE LOCAÇÃO DAS AMÉRICAS\",\"baseInterna\":\"Localiza Rent A Car Sa\",\"rating\":\"BBB-\",\"condicao\":\"Reprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"MOVIDA LOCACAO DE VEICULOS S.A.\",\"baseInterna\":\"Movida Participações S.A.\",\"rating\":\"BBB-\",\"condicao\":\"Reprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"MOVIDA PARTICIPAÇÕES S.A.\",\"baseInterna\":\"Movida Participações S.A.\",\"rating\":\"BBB-\",\"condicao\":\"Reprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"TRANS.ALIANCA DE ENERGIA ELETRICA S/A\",\"baseInterna\":\"Isa Energia Brasil S.A.\",\"rating\":\"A+\",\"condicao\":\"Aprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"TRANSMISSORA ALIANÇA DE ENERGIA ELÉTRICA S.A\",\"baseInterna\":\"Isa Energia Brasil S.A.\",\"rating\":\"A+\",\"condicao\":\"Aprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"CIA SANEAMENTO BASICO EST. SP - SABESP\",\"baseInterna\":\"Cia Saneamento Básico Estado São Paulo\",\"rating\":\"AA+\",\"condicao\":\"Aprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"EQUATORIAL TRANSMISSAO S.A\",\"baseInterna\":\"Equatorial S.A.\",\"rating\":\"A+\",\"condicao\":\"Aprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"RAIZEN ENERGIA S/A\",\"baseInterna\":\"Raízen S.A.\",\"rating\":\"B\",\"condicao\":\"Reprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"CSN MINERACAO S.A.\",\"baseInterna\":\"Cia Siderurgica Nacional\",\"rating\":\"BBB-\",\"condicao\":\"Reprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"RUMO MALHA PAULISTA S.A.\",\"baseInterna\":\"Rumo S.A.\",\"rating\":\"A\",\"condicao\":\"Aprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"MOURA DUBEUX ENGENHARIA S.A.\",\"baseInterna\":\"Moura Dubeux Engenharia S/A\",\"rating\":\"BBB\",\"condicao\":\"Reprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"EQUATORIAL GOIAS DISTRIBUIDORA DE ENERGIA S.A.\",\"baseInterna\":\"Equatorial S.A.\",\"rating\":\"A+\",\"condicao\":\"Aprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"ALLOS S.A.\",\"baseInterna\":\"Allos S.A.\",\"rating\":\"AA-\",\"condicao\":\"Aprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"ÂNIMA HOLDING S.A.\",\"baseInterna\":\"Anima Holding S/A\",\"rating\":\"BBB-\",\"condicao\":\"Reprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"COGNA EDUCAÇÃO S.A.\",\"baseInterna\":\"Cogna Educação S.A.\",\"rating\":\"A-\",\"condicao\":\"Aprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"REDE D'OR SÃO LUIZ S.A.\",\"baseInterna\":\"Rede D'Or São Luiz S.A.\",\"rating\":\"A+\",\"condicao\":\"Aprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"JBS S.A.\",\"baseInterna\":\"Jbs Sa\",\"rating\":\"A+\",\"condicao\":\"Aprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"HAVAN S.A.\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"LOJAS AMERICANAS\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"ZAMP S.A.\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"BANCO VOITER S.A.\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"OPEA SECURITIZADORA S/A\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"OLIVEIRA TRUST DTVM S/A\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"ELDORADO BRASIL CELULOSE S.A.\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"TEREOS ACUCAR E ENERGIA BRASIL S.A.\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"USINAS ITAMARATI S.A.\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"PATRIMAR ENGENHARIA S.A.\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"CONCESSIONARIA ROTA DAS BANDEIRAS S.A.\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"BIVI HOLDING S.A.\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"VAMOS LOCACAO DE CAMINHOES MAQUINAS E EQUIPAMENTOS\",\"baseInterna\":\"Vamos Locação De Caminhões, Máquinas E Equipamentos S.A.\",\"rating\":\"BBB-\",\"condicao\":\"Reprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"ETB - EMPRESA DE TRANSMISSAO BAIANA S.A.\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"IGUA RIO DE JANEIRO S.A.\",\"baseInterna\":\"Igua Saneamento S.A.\",\"rating\":\"B+\",\"condicao\":\"Reprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"J. MACÊDO S.A.\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"BANCO BTG PACTUAL S.A.\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"SENDAS DISTRIBUIDORA S.A.\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"AÇUCAREIRA QUATÁ S.A.\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"CONCESSIONARIA RODOVIAS DO TIETE S.A.\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"RNI NEGÓCIOS IMOBILIÁRIOS S.A.\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"SOCIEDADE BENEFICENTE ISRAELITA BRASILEIRA HOSPITAL ALBERT EINSTEIN\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"ORIGEM ENERGIA S.A.\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"ENAUTA PARTICIPACOES S.A.\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"TRIPLE PLAY BRASIL PARTICIPACOES S.A.\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"AIZ INDÚSTRIA DE MÁQUINAS E IMPLEMENTOS LTDA\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"AGROPECUÁRIA MASUTTI LTDA.\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"DURLI AGROPECUÁRIA S.A.\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"AGROGALAXY PARTICIPAÇÕES S.A.\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"INDÚSTRIA DE RAÇÕES PATENSE LTDA\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"ARENA VENCER COMPLEXO ESPORTIVO MULTIUSO SPE LTDA\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"AUTOGERAÇÃO SOLAR BJL BARRA LTDA\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"VIA BRASIL BR 163 CONCESSIONARIA DE RODOVIAS S.A.\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"ADUBOS ARAGUAIA INDÚSTRIA E COMÉRCIO LTDA\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"CICLUS AMBIENTAL DO BRASIL S.A\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"FS FLORESTAL S.A.\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"RL80 DESENVOLVIMENTO IMOBILIÁRIO LTDA\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"MRL ENGENHARIA E EMPREENDIMENTOS S.A. - UP2DATA\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"VALE DO PONTAL AÇÚCAR E ETANOL LTDA\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"ENERGISA MATO GROSSO - DISTRIB DE ENERGIA S.A.\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"JANAUBA TRANSMISSORA DE ENERGIA ELETRICA S.A.\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"LAVORO AGRO HOLDING S.A.\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"JF CITRUS AGROPECUÁRIA S.A.\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"MAESTRO LOCADORA DE VEÍCULOS S.A.\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"GRUPO SALTA EDUCACAO S.A.\",\"baseInterna\":\"Grupo Salta Educação S.A.\",\"rating\":\"B+\",\"condicao\":\"Reprovado\",\"tipo\":\"Privado\"},{\"baseXP\":\"FARMÁCIA E DROGARIA NISSEI S.A.\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"COMPANHIA ALCOOLQUÍMICA NACIONAL-ALCOOLQUÍMICA\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"BANCO MERCANTIL DO BRASIL S.A.\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"DISTRIBUIDORA DE PRODUTOS DE PETRÓLEO CHARRUA LTDA\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"UBY AGROQUÍMICA S.A.\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"UNIDAS LOCAÇÕES E SERVIÇOS S.A.\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"GNI64 RJ EMPREENDIMENTOS IMOBILIÁRIOS LTDA\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"FAZENDÃO INDÚSTRIA E COMÉRCIO DE PRODUTOS AGROPECUÁRIOS LTDA\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"S.A. USINA CORURIPE AÇÚCAR E ÁLCOOL\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"AGRO QUARTZO ADMINISTRAÇÃO E PARTICIPAÇÕES LTDA\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"VIARONDON CONCESSIONARIA DE RODOVIA S/A\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"COMPANHIA DE GAS DE SAO PAULO - COMGAS\",\"baseInterna\":\"\",\"rating\":\"—\",\"condicao\":\"Sem Cobertura\",\"tipo\":\"Privado\"},{\"baseXP\":\"SUZANO S.A.\",\"baseInterna\":\"Suzano S.A.\",\"rating\":\"AA-\",\"condicao\":\"Aprovado\",\"tipo\":\"Privado\"}]";
 
 // ─────────────────────────────────────────────────────────────────
 //  TOPBAR: voltar / nova aba / relógio / tema
@@ -584,10 +649,9 @@ function clearFile(statusElId) {
       </div>`;
   } else {
     dadosBase = [];
-    document.getElementById('fileBase').value = '';
     document.getElementById('dzBase').classList.remove('loaded');
   }
-  setStatus(statusElId, 'idle', 'Aguardando arquivo…');
+  setStatus(statusElId, 'idle', statusElId === 'statusBase' ? 'Aguardando base salva…' : 'Aguardando arquivo…');
   checkReady();
 }
 
@@ -700,55 +764,183 @@ bindUpload('dzPosicoes','filePosicoes', file => {
 // ─────────────────────────────────────────────────────────────────
 //  LOAD BASE REFERÊNCIA
 // ─────────────────────────────────────────────────────────────────
-bindUpload('dzBase','fileBase', file => {
-  readXlsx(file, (wb, err) => {
-    if(err) { setStatus('statusBase','err','❌ '+err); markDropZone('dzBase',false); return; }
+function parseBaseWorkbook(wb) {
+  const sheetBanc = wb.SheetNames.find(s => s.toLowerCase().includes('banc'));
+  const sheetPriv = wb.SheetNames.find(s => s.toLowerCase().includes('priv'));
 
-    const sheetBanc = wb.SheetNames.find(s => s.toLowerCase().includes('banc'));
-    const sheetPriv = wb.SheetNames.find(s => s.toLowerCase().includes('priv'));
+  if(!sheetBanc && !sheetPriv) {
+    return { error: 'Abas "Crédito Bancário" / "Crédito Privado" não encontradas' };
+  }
 
-    if(!sheetBanc && !sheetPriv) {
-      setStatus('statusBase','err','❌ Abas "Crédito Bancário" / "Crédito Privado" não encontradas');
-      return;
+  const rowsOut = [];
+  let nBanc = 0, nPriv = 0;
+
+  function parseSheet(sheetName, tipo) {
+    if(!sheetName) return 0;
+    const rows = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], {defval:''});
+    rows.forEach(r => {
+      const keys = Object.keys(r);
+      const get = (...names) => {
+        for(const n of names) {
+          const f = keys.find(k => k.trim().toLowerCase().includes(n.toLowerCase()));
+          if(f !== undefined) return r[f];
+        } return '';
+      };
+      const clean = v => { const s = String(v||'').trim(); return (s==='nan'||s==='NaN'||s==='undefined'||s==='-') ? '' : s; };
+      const baseXP     = clean(get('Base XP','xp','base xp'));
+      const baseInterna= clean(get('Base Interna','interna','base interna'));
+      const rating     = clean(get('Rating','rating')) || '—';
+      const condicao   = clean(get('Condição','Condicao','condicao','condição'));
+      if(baseXP || baseInterna) {
+        rowsOut.push({baseXP, baseInterna, rating, condicao, tipo});
+      }
+    });
+    return rows.length;
+  }
+
+  nBanc = parseSheet(sheetBanc, 'Bancário');
+  nPriv = parseSheet(sheetPriv, 'Privado');
+
+  if(!rowsOut.length) return { error: 'Nenhum dado encontrado nas abas' };
+  return { rows: rowsOut, nBanc, nPriv };
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  ADMIN: base salva no HTML (senha → upload → gerar novo HTML)
+// ─────────────────────────────────────────────────────────────────
+async function sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+function initBase() {
+  try {
+    const parsed = JSON.parse(BASE_REFERENCIA_JSON);
+    if (Array.isArray(parsed) && parsed.length) {
+      dadosBase = parsed;
+      setStatus('statusBase','ok',`✓ ${dadosBase.length} emissores carregados (base salva)`);
+      markDropZone('dzBase', true);
+      checkReady();
     }
+  } catch(e) { /* base ainda não foi salva */ }
+}
 
-    dadosBase = [];
-    let nBanc = 0, nPriv = 0;
-
-    function parseSheet(sheetName, tipo) {
-      if(!sheetName) return 0;
-      const rows = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], {defval:''});
-      rows.forEach(r => {
-        const keys = Object.keys(r);
-        const get = (...names) => {
-          for(const n of names) {
-            const f = keys.find(k => k.trim().toLowerCase().includes(n.toLowerCase()));
-            if(f !== undefined) return r[f];
-          } return '';
-        };
-        const clean = v => { const s = String(v||'').trim(); return (s==='nan'||s==='NaN'||s==='undefined'||s==='-') ? '' : s; };
-        const baseXP     = clean(get('Base XP','xp','base xp'));
-        const baseInterna= clean(get('Base Interna','interna','base interna'));
-        const rating     = clean(get('Rating','rating')) || '—';
-        const condicao   = clean(get('Condição','Condicao','condicao','condição'));
-        if(baseXP || baseInterna) {
-          dadosBase.push({baseXP, baseInterna, rating, condicao, tipo});
-        }
-      });
-      return rows.length;
-    }
-
-    nBanc = parseSheet(sheetBanc, 'Bancário');
-    nPriv = parseSheet(sheetPriv, 'Privado');
-
-    if(!dadosBase.length) { setStatus('statusBase','err','❌ Nenhum dado encontrado nas abas'); return; }
-
-    setStatus('statusBase','ok',`✓ ${dadosBase.length} emissores · ${nBanc} Bancário · ${nPriv} Privado`);
-    markDropZone('dzBase', true);
-    if (currentClientsList.length) buildClientsList(true);
-    checkReady();
-  });
+document.getElementById('dzBase').addEventListener('click', () => {
+  document.getElementById('modalSenha').classList.remove('hidden');
+  document.getElementById('modalSenhaInput').value = '';
+  document.getElementById('modalSenhaErr').style.display = 'none';
+  setTimeout(() => document.getElementById('modalSenhaInput').focus(), 100);
 });
+
+document.getElementById('modalSenhaCancelar').addEventListener('click', () => {
+  document.getElementById('modalSenha').classList.add('hidden');
+});
+
+document.getElementById('modalSenhaConfirmar').addEventListener('click', async () => {
+  const senha = document.getElementById('modalSenhaInput').value;
+  const hash = await sha256(senha);
+  if (hash === SENHA_HASH) {
+    document.getElementById('modalSenha').classList.add('hidden');
+    abrirModalUploadBase();
+  } else {
+    document.getElementById('modalSenhaErr').style.display = 'block';
+    document.getElementById('modalSenhaInput').value = '';
+    document.getElementById('modalSenhaInput').focus();
+  }
+});
+
+document.getElementById('modalSenhaInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') document.getElementById('modalSenhaConfirmar').click();
+});
+document.getElementById('btnToggleSenha').addEventListener('click', () => {
+  const inp = document.getElementById('modalSenhaInput');
+  const icon = document.getElementById('eyeIcon');
+  if (inp.type === 'password') { inp.type = 'text'; icon.textContent = 'visibility_off'; }
+  else { inp.type = 'password'; icon.textContent = 'visibility'; }
+  inp.focus();
+});
+
+// ── Modal de upload da nova base ──
+function abrirModalUploadBase() {
+  pendingBaseData = [];
+  document.getElementById('dzBaseModal').classList.remove('ok');
+  document.getElementById('fileBaseModal').value = '';
+  document.getElementById('stBaseModal').innerHTML = '';
+  document.getElementById('modalBaseSalvar').disabled = true;
+  document.getElementById('modalUploadBase').classList.remove('hidden');
+}
+
+document.getElementById('modalBaseFechar').addEventListener('click', () => {
+  document.getElementById('modalUploadBase').classList.add('hidden');
+});
+
+document.getElementById('modalBaseSalvar').addEventListener('click', () => {
+  if (!pendingBaseData.length) return;
+  gerarHTMLComBase();
+  document.getElementById('modalUploadBase').classList.add('hidden');
+});
+
+(function(){
+  const dz  = document.getElementById('dzBaseModal');
+  const inp = document.getElementById('fileBaseModal');
+  function handleFile(file) {
+    readXlsx(file, (wb, err) => {
+      if (err) {
+        document.getElementById('stBaseModal').innerHTML = `<span class="st err">❌ ${err}</span>`;
+        return;
+      }
+      const result = parseBaseWorkbook(wb);
+      if (result.error) {
+        document.getElementById('stBaseModal').innerHTML = `<span class="st err">❌ ${result.error}</span>`;
+        return;
+      }
+      pendingBaseData = result.rows;
+      dz.classList.add('ok');
+      document.getElementById('dzBaseModalLabel').textContent = file.name;
+      document.getElementById('stBaseModal').innerHTML = `<span class="st ok">✓ ${pendingBaseData.length} emissores · ${result.nBanc} Bancário · ${result.nPriv} Privado</span>`;
+      document.getElementById('modalBaseSalvar').disabled = false;
+    });
+  }
+  inp.addEventListener('change', e => { if (e.target.files[0]) handleFile(e.target.files[0]); });
+  dz.addEventListener('click', () => inp.click());
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('drag'));
+  dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('drag'); if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
+})();
+
+function gerarHTMLComBase() {
+  const baseJson = JSON.stringify(pendingBaseData);
+
+  function aplicarSubstituicoes(src) {
+    return src
+      .replace(/const BASE_REFERENCIA_JSON = (?:'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*");/s,
+        `const BASE_REFERENCIA_JSON = ${JSON.stringify(baseJson)};`)
+      .replace(/(<div class="modal-overlay)(?!.*hidden)(.*?">)/g, '$1 hidden$2');
+  }
+
+  function baixar(html) {
+    const blob = new Blob([html], { type: 'text/html' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'index.html';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+
+  document.querySelectorAll('.modal-overlay').forEach(m => m.classList.add('hidden'));
+
+  fetch(window.location.href, { cache: 'no-store' })
+    .then(r => { if (!r.ok) throw new Error(); return r.text(); })
+    .then(htmlFonte => baixar(aplicarSubstituicoes(htmlFonte)))
+    .catch(() => {
+      const clone = document.documentElement.cloneNode(true);
+      clone.querySelectorAll('.modal-overlay').forEach(m => m.classList.add('hidden'));
+      clone.querySelectorAll('.upload-card.loaded .drop-zone').forEach(d => {});
+      baixar(aplicarSubstituicoes('<!DOCTYPE html>\n' + clone.outerHTML));
+    });
+}
+
+initBase();
 
 // ─────────────────────────────────────────────────────────────────
 //  CLIENTS LIST (build / filter / sort / render)
